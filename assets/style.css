@@ -180,3 +180,4 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .school-list li:first-child { border-top: 0; }
 .school-list time { color: var(--muted); font-size: 14px; }
 .school-list a { font-weight: 700; }
+.insta-list a::before { content: "Instagram"; display: inline-block; margin-right: 8px; padding: 0 6px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font-size: 12px; font-weight: 400; vertical-align: 2px; }

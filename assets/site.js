@@ -162,14 +162,16 @@
     }, function (err) { showError(box, err); });
   }
 
-  // data-school="5" / "all" のついた箱に、学校のホームページの CS 記事（リンク）を並べる
-  function fillSchool() {
-    var boxes = document.querySelectorAll('[data-school]');
+  // data-school="5" / "all" のついた箱に学校のホームページの CS 記事を、
+  // data-insta="5" / "all" の箱に学生ボランティアの Instagram の投稿を、リンクで並べる（なければ節ごと隠す）
+  function fillLinks(attr, param) {
+    var boxes = document.querySelectorAll('[' + attr + ']');
     if (!boxes.length) return;
-    api({ school: 1 }).then(function (d) {
+    var q = {}; q[param] = 1;
+    api(q).then(function (d) {
       if (!d.ok) throw new Error(d.error);
       boxes.forEach(function (el) {
-        var n = el.getAttribute('data-school');
+        var n = el.getAttribute(attr);
         var items = n === 'all' ? d.items : d.items.slice(0, Number(n) || 5);
         var section = el.closest('section');
         if (!items.length) { if (section) section.hidden = true; return; }
@@ -201,6 +203,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    setupNav(); setupContact(); fillBoxes(); setupFilter(); setupArticle(); fillSchool();
+    setupNav(); setupContact(); fillBoxes(); setupFilter(); setupArticle(); fillLinks('data-school', 'school'); fillLinks('data-insta', 'insta');
   });
 })();
