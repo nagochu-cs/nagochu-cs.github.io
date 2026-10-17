@@ -152,6 +152,29 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .tbd { background: #fff2cc; border-radius: 4px; padding: 0 4px; font-size: .9em; color: #7a5a00; }
 
 .site-footer { border-top: 1px solid var(--line); margin-top: 40px; padding: 24px 0 40px; font-size: 13px; color: var(--muted); }
+.site-footer p { margin: 0 0 8px; }
+.site-footer a { color: var(--accent); }
+.foot-cols { display: grid; gap: 20px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .foot-cols { grid-template-columns: 3fr 2fr; } }
+.foot-name { font-weight: 700; color: var(--text); }
+.foot-h { font-weight: 700; color: var(--text); }
+.foot-links { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.foot-updated { margin-top: 16px !important; font-size: 12px; }
+
+/* 数字で見る CS（トップ） */
+.stats { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 760px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+.stats li { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--shu); padding: 16px 12px; text-align: center; display: flex; flex-direction: column; gap: 6px; }
+.stats .num { font-size: clamp(36px, 10vw, 52px); line-height: 1; font-weight: 700; color: var(--accent); }
+.stats .num small { font-size: .4em; margin-left: 2px; color: var(--text); }
+.stats .lbl { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+/* リンク集（CSについて） */
+.link-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.link-list li { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-top: 1px solid var(--line); }
+.link-list li:first-child { border-top: 0; }
+.link-list a { font-weight: 700; color: var(--accent); overflow-wrap: anywhere; }
+.link-list span { font-size: 14px; color: var(--muted); }
 
 /* 投稿ページ（toukou.html） */
 .post-form { max-width: 640px; padding: 8px 0 40px; }
