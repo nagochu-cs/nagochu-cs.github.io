@@ -1,0 +1,182 @@
+/* a4b.jp 名護中学校コミュニティスクール */
+:root {
+  /* B案「学場真素」（2026-10-18）: 生成りの紙に紺と朱 */
+  --bg: #f6f3ec;
+  --surface: #fffdf8;
+  --text: #1e2230;
+  --muted: #5b5f6b;
+  --line: #ddd6c6;
+  --accent: #23305a;      /* 紺 */
+  --accent-soft: #e6e8f1;
+  --shu: #b8322a;         /* 朱 */
+  --radius: 4px;
+  --max: 1040px;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+  font-size: 16px; line-height: 1.85;
+}
+a { color: var(--accent); }
+img { max-width: 100%; display: block; }
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 16px; }
+
+/* ヘッダー */
+.site-header { background: var(--surface); border-bottom: 3px double var(--line); position: sticky; top: 0; z-index: 10; }
+.site-header .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 60px; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); min-width: 0; }
+.brand img { width: 44px; height: 44px; flex: none; border-radius: 50%; background: #fff; }
+.brand span { font-weight: 700; line-height: 1.3; font-size: 15px; }
+.brand small { display: block; font-weight: 400; font-size: 11px; color: var(--muted); }
+.site-nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 4px; flex-wrap: wrap; }
+.site-nav a { display: block; padding: 8px 12px; border-radius: 2px; color: var(--text); text-decoration: none; font-size: 15px; }
+.site-nav a:hover { background: var(--accent-soft); }
+.site-nav a[aria-current="page"] { background: var(--accent); color: #fff; }
+.nav-toggle { display: none; background: none; border: 1px solid var(--line); border-radius: 2px; padding: 6px 12px; font: inherit; color: var(--text); white-space: nowrap; flex: none; }
+@media (max-width: 760px) {
+  .nav-toggle { display: block; }
+  .site-nav { display: none; position: absolute; left: 0; right: 0; top: 100%; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .nav-open .site-nav { display: block; }
+  .site-nav ul { flex-direction: column; padding: 8px 16px 12px; }
+}
+
+/* トップの冒頭（B案: 縦書きの校訓「学場真素」） */
+.b-hero { padding: 36px 0 28px; }
+.b-hero .wrap { display: grid; gap: 24px; align-items: center; }
+.b-kun { display: flex; flex-direction: row-reverse; justify-content: center; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.b-kun li { writing-mode: vertical-rl; text-orientation: upright; background: var(--surface); border: 1px solid var(--line); padding: 12px 6px; border-radius: 2px; display: flex; flex-direction: row; align-items: center; gap: 8px; }
+.b-kun b { font-size: clamp(40px, 11vw, 64px); line-height: 1; color: var(--accent); font-weight: 700; }
+.b-kun li:nth-child(2) b, .b-kun li:nth-child(3) b { color: var(--shu); }
+.b-kun span { font-size: 13px; color: var(--muted); letter-spacing: .1em; }
+.b-lead h1 { font-size: clamp(24px, 6vw, 36px); line-height: 1.6; margin: 0 0 12px; }
+.b-lead p { margin: 0 0 16px; }
+.b-lead .seal { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+.b-lead .seal img { width: 40px; height: 40px; }
+@media (min-width: 761px) { .b-hero { padding: 64px 0 48px; } .b-hero .wrap { grid-template-columns: 1fr 1.1fr; gap: 48px; } }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.b-photo { aspect-ratio: 980 / 380; border: 8px solid var(--surface); box-shadow: 0 1px 0 var(--line), 0 10px 30px rgba(30,34,48,.08); }
+.b-pillars { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 761px) { .b-pillars { grid-template-columns: repeat(3, 1fr); } }
+.b-pillar { background: var(--surface); border: 1px solid var(--line); padding: 20px; position: relative; }
+.b-pillar .big { position: absolute; right: 12px; top: 6px; font-size: 64px; line-height: 1; color: rgba(184,50,42,.12); font-weight: 700; }
+.b-pillar h3 { margin: 0 0 4px; font-size: 19px; }
+.b-pillar .sub { font-size: 13px; color: var(--shu); margin: 0 0 10px; }
+.b-pillar p { margin: 0; font-size: 14px; color: var(--muted); }
+.b-pillar .ph { aspect-ratio: 16 / 9; margin: 0 0 14px; filter: saturate(.85); }
+
+/* 写真（学校HPの写真。顔が映っていないものだけ） */
+.ph { margin: 0; position: relative; overflow: hidden; }
+.ph img { width: 100%; height: 100%; object-fit: cover; }
+.ph figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 12px 8px; font-size: 12px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.6)); line-height: 1.5; }
+.gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.gallery .ph { aspect-ratio: 4 / 3; border-radius: 2px; }
+@media (min-width: 761px) { .gallery { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
+
+/* ページの見出し（左に縦書きの2文字） */
+.page-head { padding: 36px 0 16px; border-bottom: 1px solid var(--line); margin-bottom: 8px; display: flex; gap: 16px; align-items: flex-start; }
+.page-head .k { writing-mode: vertical-rl; font-size: 34px; font-weight: 700; color: var(--shu); line-height: 1; flex: none; }
+.page-head h1 { font-size: clamp(24px, 5vw, 32px); margin: 0 0 6px; line-height: 1.4; }
+.page-head p { color: var(--muted); margin: 0; }
+
+section { padding: 32px 0; }
+h2 { font-size: 24px; margin: 0 0 16px; line-height: 1.4; display: flex; align-items: center; gap: 12px; }
+h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex: none; }
+.more { margin-top: 16px; }
+.button { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 2px; font-weight: 700; }
+.button.disabled { background: #b8c2bf; cursor: default; }
+.button-sun { background: #f08a3c; }
+.button-ghost { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+/* 記事カード */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.card a { color: inherit; text-decoration: none; display: block; height: 100%; }
+.card a:hover h3 { color: var(--accent); }
+.card-photo { aspect-ratio: 4 / 3; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.card-photo img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .3s; }
+.card-photo img.loaded { opacity: 1; }
+.no-photo { color: var(--accent); font-weight: 700; padding: 16px; text-align: center; }
+.card-body { padding: 14px 16px 18px; }
+.card-body h3 { font-size: 17px; line-height: 1.5; margin: 6px 0; }
+.card-body p { margin: 0; font-size: 14px; color: var(--muted); }
+.meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin: 0; }
+.tag { display: inline-block; padding: 1px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 700; text-decoration: none; }
+.tag-asagohan { background: #fdf0d8; color: #9a5a00; }
+.tag-tentabaru { background: #e8eefb; color: #2f4f9a; }
+.tag-akinai { background: #fbe8e6; color: #a1372b; }
+.tag-gakushu { background: #efe9f8; color: #5b3f91; }
+.tag-kouen { background: #ececec; color: #444; }
+.empty { color: var(--muted); }
+
+/* 絞り込み */
+.filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 24px; }
+.filter button { font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
+.filter button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* 記事ページ */
+.article { max-width: 720px; margin: 0 auto; padding: 32px 0 16px; }
+.article h1 { font-size: clamp(22px, 4.5vw, 30px); line-height: 1.5; margin: 12px 0 20px; }
+.article figure { margin: 24px 0; }
+.article figure img { width: 100%; border-radius: var(--radius); background: var(--accent-soft); min-height: 120px; }
+.article figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; }
+.photo-error img { display: none; }
+.back { display: inline-block; margin-top: 24px; }
+
+/* 活動の紹介 */
+.activity { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px 20px; margin-bottom: 24px; }
+.activity h2 { margin-bottom: 8px; }
+.activity > p { margin: 0 0 16px; }
+.activity h3 { font-size: 15px; color: var(--muted); margin: 20px 0 12px; }
+.activity-index { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; list-style: none; padding: 0; margin: 0; }
+.activity-index a { display: block; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--text); font-weight: 700; }
+.activity-index a:hover { border-color: var(--accent); color: var(--accent); }
+/* 活動の一覧（写真つきのカード） */
+.act-list { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 761px) { .act-list { grid-template-columns: repeat(3, 1fr); } }
+.act { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; color: var(--text); text-decoration: none; }
+.act:hover h3 { color: var(--accent); }
+.act .ph { aspect-ratio: 16 / 10; }
+.act .ph.noimg { display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; color: #fff; background: var(--accent); }
+.act-body { padding: 14px 16px 18px; }
+.act-body .when { display: inline-block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--shu); }
+.act-body h3 { margin: 0 0 6px; font-size: 18px; line-height: 1.4; }
+.act-body p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.75; }
+
+.values { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; list-style: none; padding: 0; }
+.values li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+.values strong { display: block; color: var(--accent); font-size: 18px; margin-bottom: 4px; }
+
+/* まだ決まっていない所（公開前に消す） */
+.tbd { background: #fff2cc; border-radius: 4px; padding: 0 4px; font-size: .9em; color: #7a5a00; }
+
+.site-footer { border-top: 1px solid var(--line); margin-top: 40px; padding: 24px 0 40px; font-size: 13px; color: var(--muted); }
+
+/* 投稿ページ（toukou.html） */
+.post-form { max-width: 640px; padding: 8px 0 40px; }
+.post-form label { display: block; font-weight: 700; margin: 20px 0 6px; }
+.post-form input[type="text"], .post-form input[type="date"], .post-form select, .post-form textarea { width: 100%; font: inherit; font-size: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); }
+.post-form input[type="file"] { font: inherit; max-width: 100%; }
+.post-form fieldset { border: 0; padding: 0; margin: 20px 0 0; }
+.post-form legend { font-weight: 700; margin-bottom: 6px; padding: 0; }
+.post-form label.check { font-weight: 400; display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; }
+.post-form label.check input { width: 22px; height: 22px; flex: none; margin-top: 2px; }
+.post-form .hint { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+.post-form .req { font-size: 12px; font-weight: 700; color: #a1372b; margin-left: 4px; }
+.post-form .button { border: 0; font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; margin-top: 12px; width: 100%; max-width: 320px; }
+.post-form .button:disabled { background: #b8c2bf; cursor: default; }
+.post-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.post-previews img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+.post-message { min-height: 1.5em; margin: 20px 0 0; font-weight: 700; color: var(--accent); }
+.post-message.error { color: #a1372b; }
+.post-trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.post-done { padding: 24px 0 48px; }
+
+/* 学校のホームページの記事（リンクの一覧） */
+.note { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+.school-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.school-list li { display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; border-top: 1px solid var(--line); }
+.school-list li:first-child { border-top: 0; }
+.school-list time { color: var(--muted); font-size: 14px; }
+.school-list a { font-weight: 700; }

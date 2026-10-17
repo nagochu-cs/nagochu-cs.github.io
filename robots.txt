@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://nagochu-cs.github.io/sitemap.xml
