@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" href="assets/img/koushou.png">
 <link rel="stylesheet" href="assets/style.css?v=13">
 <script src="assets/config.js?v=2"></script>
-<script src="assets/toukou.js" defer></script>
+<script src="assets/toukou.js?v=2" defer></script>
 <script src="assets/kanri.js?v=4" defer></script>
 </head>
 <body>
@@ -31,8 +31,10 @@
   </nav>
   <form class="post-form" id="post-form" novalidate>
     <label for="f-pass">合言葉 <span class="req">必須</span></label>
-    <input id="f-pass" name="passcode" type="text" autocomplete="off" autocapitalize="off" required>
+    <input id="f-pass" name="passcode" type="password" autocomplete="off" autocapitalize="off" required>
     <p class="hint">関係者にお伝えしている合言葉です。</p>
+    <label class="check"><input type="checkbox" id="f-pass-show"> 合言葉を見える文字にする</label>
+    <label class="check"><input type="checkbox" name="rememberPass"> この端末で覚える（自分のスマホだけ。学校の共用の端末では外す）</label>
 
     <label for="f-date">活動した日 <span class="req">必須</span></label>
     <input id="f-date" name="date" type="date" required>

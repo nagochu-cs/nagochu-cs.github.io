@@ -36,11 +36,16 @@
   var now = new Date();
   form.date.value = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2);
 
-  // 合言葉と名前は、この端末に覚えておく（次からは入力しなくてよい）
+  // 名前は、この端末に覚えておく（次からは入力しなくてよい）。合言葉は「この端末で覚える」を選んだときだけ（2026-10-18）
   function remember(k, v) { try { if (v) localStorage.setItem('a4b_' + k, v); } catch (e) { /* 使えない端末では覚えない */ } }
+  function forget(k) { try { localStorage.removeItem('a4b_' + k); } catch (e) { /* 使えない端末では何もしない */ } }
   function recall(k) { try { return localStorage.getItem('a4b_' + k) || ''; } catch (e) { return ''; } }
   form.passcode.value = recall('passcode');
+  form.rememberPass.checked = !!form.passcode.value;
   form.writer.value = recall('writer');
+  document.getElementById('f-pass-show').addEventListener('change', function () {
+    form.passcode.type = this.checked ? 'text' : 'password';
+  });
 
   // 本文の字数
   var count = document.getElementById('f-count');
@@ -139,7 +144,7 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d.ok) throw new Error(d.error || 'server_error');
-        remember('passcode', payload.passcode);
+        if (form.rememberPass.checked) remember('passcode', payload.passcode); else forget('passcode');
         remember('writer', payload.writer);
         form.hidden = true;
         document.getElementById('post-done').hidden = false;
