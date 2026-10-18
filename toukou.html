@@ -6,10 +6,10 @@
 <title>記事を書く｜名護中学校コミュニティスクール</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="assets/img/koushou.png">
-<link rel="stylesheet" href="assets/style.css?v=8">
+<link rel="stylesheet" href="assets/style.css?v=9">
 <script src="assets/config.js"></script>
 <script src="assets/toukou.js" defer></script>
-<script src="assets/kanri.js?v=2" defer></script>
+<script src="assets/kanri.js?v=3" defer></script>
 </head>
 <body>
 <header class="site-header">
@@ -25,7 +25,8 @@
   </div></div>
   <nav class="mode-tabs" aria-label="ページの切りかえ">
     <a href="toukou.html" id="tab-kaku" aria-current="page">記事を書く</a>
-    <a href="toukou.html#naosu" id="tab-naosu">記事を直す（管理）</a>
+    <a href="toukou.html#naosu" id="tab-naosu">記事を直す</a>
+    <a href="toukou.html#link" id="tab-link">リンクの管理</a>
   </nav>
   <form class="post-form" id="post-form" novalidate>
     <label for="f-pass">合言葉 <span class="req">必須</span></label>
@@ -79,13 +80,43 @@
       <label for="a-pass">管理用の合言葉</label>
       <input id="a-pass" name="passcode" type="password" autocomplete="off" autocapitalize="off" required>
       <p class="hint">記事を書くときの合言葉とは別のものです。このタブを閉じると忘れます。</p>
-      <button class="button" type="submit" id="a-open">記事の一覧を出す</button>
+      <button class="button" type="submit" id="a-open">開く</button>
     </form>
     <p class="post-message" id="a-message" role="status" aria-live="polite"></p>
     <div id="admin-body" hidden>
       <div class="admin-filter" id="admin-filter" role="group" aria-label="しぼりこみ"></div>
       <ul class="admin-list" id="admin-list"></ul>
       <p class="note">「公開」にすると、すぐサイトに出ます（写真の準備に少し時間がかかります）。文字や写真は「文字・写真を直す」で直せます。</p>
+    </div>
+    <div id="link-body" hidden>
+      <h2>学生ボランティアの Instagram</h2>
+      <form class="post-form admin-add" id="insta-add" novalidate>
+        <label for="i-url">投稿の URL</label>
+        <input id="i-url" name="url" type="text" inputmode="url" autocomplete="off" placeholder="https://www.instagram.com/p/…">
+        <p class="hint">Instagram の投稿の「…」→「リンクをコピー」で取った URL を貼ってください。</p>
+        <label for="i-date">日付</label>
+        <input id="i-date" name="date" type="date">
+        <label for="i-title">見出し</label>
+        <input id="i-title" name="title" type="text" maxlength="60" placeholder="例: 7月22日の朝ごはんPJ（豚汁・サラダ）">
+        <button class="button" type="submit">足して掲載する</button>
+      </form>
+      <ul class="admin-list link-list-admin" id="insta-list"></ul>
+      <h2>学校のホームページの記事</h2>
+      <p class="note">毎朝6時に学校のホームページを見て、CS に関わりそうな記事を「候補」で足し、メールでお知らせします。「掲載にする」を押すとサイトに出ます。</p>
+      <div class="admin-filter" id="school-filter" role="group" aria-label="しぼりこみ"></div>
+      <ul class="admin-list link-list-admin" id="school-list"></ul>
+      <details class="admin-more">
+        <summary>候補に出てこない学校の記事を、手で足す</summary>
+        <form class="post-form admin-add" id="school-add" novalidate>
+          <label for="s-url">記事の URL</label>
+          <input id="s-url" name="url" type="text" inputmode="url" autocomplete="off" placeholder="http://sw.city.nago.okinawa.jp/nago-c/archives/…">
+          <label for="s-date">日付</label>
+          <input id="s-date" name="date" type="date">
+          <label for="s-title">タイトル</label>
+          <input id="s-title" name="title" type="text" maxlength="100">
+          <button class="button" type="submit">足して掲載する</button>
+        </form>
+      </details>
     </div>
   </section>
   <div class="post-done" id="post-done" hidden>
@@ -115,7 +146,7 @@
         </ul>
       </div>
     </div>
-    <p class="foot-staff">関係者の方へ: <a href="toukou.html">記事を書く</a>｜<a href="toukou.html#naosu">記事を直す（管理）</a></p>
+    <p class="foot-staff">関係者の方へ: <a href="toukou.html">記事の管理</a>｜<a href="toukou.html#link">リンクの管理（学校HP・Instagram）</a></p>
     <p class="foot-updated">最終更新: <span data-updated>2026-10-18</span></p>
   </div>
 </footer>

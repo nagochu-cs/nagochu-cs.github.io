@@ -1,4 +1,4 @@
-// 投稿ページ（toukou.html）の「記事を直す（管理）」: 全部の記事を並べ、公開・非公開を切りかえ、文字と写真を直す
+// 投稿ページ（toukou.html）の管理: 「記事を直す」（#naosu。公開の切りかえ・文字と写真の直し）と「リンクの管理」（#link。学校HP・Instagram）
 // 管理用の合言葉（投稿の合言葉とは別）で GAS の doPost（action: admin_list / admin_set）を呼ぶ。合言葉は sessionStorage にだけ置く
 (function () {
   var C = window.A4B_CONFIG || {};
@@ -14,7 +14,12 @@
     bad_body: '本文を入れてください（2000字まで）。',
     bad_photo: '写真を読み込めませんでした。別の写真を選んでください。',
     too_many_photos: '写真は4枚までです。',
+    bad_url: 'URL を確かめてください（Instagram は投稿の URL、学校は学校のホームページの記事の URL）。',
+    duplicate: 'その URL は、もう入っています。',
   };
+  var linkBody = document.getElementById('link-body');
+  var links = null;        // { school: [...], insta: [...] }
+  var schoolFilter = '候補';
   var MAX_PHOTOS = 4;
   var PHOTO_SIZE = 1600;
   var thumbs = {};     // 写真の見本（ID → data URL）
@@ -45,23 +50,32 @@
     return m ? m[1] + '年' + Number(m[2]) + '月' + Number(m[3]) + '日' : '（日付なし）';
   }
 
-  // 「記事を書く」と「記事を直す」を、URL の #naosu で切りかえる
+  // 「記事を書く」「記事を直す」「リンクの管理」を、URL の # で切りかえる
+  var MODES = {
+    kaku: { title: '記事を書く', lead: '活動の記事を送るページです。送った記事は、確認してからサイトに載せます。すぐには公開されません。' },
+    naosu: { title: '記事を直す', lead: '届いた記事を並べ、公開・非公開の切りかえと、文字・写真の直しをするページです（管理用）。' },
+    link: { title: 'リンクの管理', lead: '学生ボランティアの Instagram と、学校のホームページの記事を、サイトに載せる・外すページです（管理用）。' },
+  };
+  function current() { return location.hash === '#naosu' ? 'naosu' : location.hash === '#link' ? 'link' : 'kaku'; }
   function mode() {
-    var naosu = location.hash === '#naosu';
-    section.hidden = !naosu;
-    postForm.hidden = naosu;
-    if (naosu) done.hidden = true;
-    document.getElementById('mode-title').textContent = naosu ? '記事を直す' : '記事を書く';
-    document.getElementById('mode-lead').textContent = naosu
-      ? '届いた記事を並べ、公開・非公開の切りかえと、文字・写真の直しをするページです（管理用）。'
-      : '活動の記事を送るページです。送った記事は、確認してからサイトに載せます。すぐには公開されません。';
-    document.getElementById('tab-kaku').toggleAttribute('aria-current', !naosu);
-    document.getElementById('tab-naosu').toggleAttribute('aria-current', naosu);
-    if (naosu && pass() && !items.length) load();
+    var m = current();
+    var admin = m !== 'kaku';
+    section.hidden = !admin;
+    postForm.hidden = admin;
+    if (admin) done.hidden = true;
+    document.getElementById('mode-title').textContent = MODES[m].title;
+    document.getElementById('mode-lead').textContent = MODES[m].lead;
+    ['kaku', 'naosu', 'link'].forEach(function (k) { document.getElementById('tab-' + k).toggleAttribute('aria-current', k === m); });
+    body.hidden = true;
+    linkBody.hidden = true;
+    say('');
+    if (!admin) return;
+    if (!pass()) { login.hidden = false; return; }
+    if (m === 'naosu') load(); else loadLinks();
   }
   window.addEventListener('hashchange', mode);
   document.getElementById('tab-kaku').addEventListener('click', function (ev) {
-    if (location.hash === '#naosu') { ev.preventDefault(); history.pushState(null, '', 'toukou.html'); mode(); }
+    if (current() !== 'kaku') { ev.preventDefault(); history.pushState(null, '', 'toukou.html'); mode(); }
   });
 
   function api(payload) {
@@ -71,7 +85,7 @@
       .then(function (d) { if (!d.ok) throw new Error(d.error || 'server_error'); return d; });
   }
   function fail(err) {
-    if (err.message === 'bad_passcode') { keep(''); body.hidden = true; login.hidden = false; }
+    if (err.message === 'bad_passcode') { keep(''); body.hidden = true; linkBody.hidden = true; login.hidden = false; }
     say(ERRORS[err.message] || 'うまくいきませんでした。電波のよいところで、もう一度ためしてください。', true);
   }
 
@@ -94,7 +108,7 @@
     if (!v) { say('管理用の合言葉を入れてください。', true); return; }
     keep(v);
     login.passcode.value = '';
-    load();
+    if (current() === 'link') loadLinks(); else load();
   });
 
   function draw() {
@@ -275,6 +289,78 @@
       draw();
     }, function (err) { draw(); fail(err); });
   });
+
+  // ─── リンクの管理（学校HP・Instagram） ───
+  function loadLinks() {
+    if (!C.GAS_URL) { say(ERRORS.not_ready, true); return; }
+    say('リンクの一覧を読みこんでいます…');
+    api({ action: 'admin_links' }).then(function (d) {
+      links = { school: d.school || [], insta: d.insta || [] };
+      login.hidden = true;
+      linkBody.hidden = false;
+      say('');
+      drawLinks();
+    }, fail);
+  }
+
+  function linkItem(kind, x) {
+    var btns = ['掲載', '外す', '候補'].filter(function (s) { return s !== x.status && !(kind === 'insta' && s === '候補'); }).map(function (s) {
+      return '<button type="button" class="button' + (s === '掲載' ? '' : ' button-ghost') + '" data-kind="' + kind + '" data-url="' + esc(x.url) + '" data-ls="' + s + '">' + s + (s === '外す' ? '' : 'に') + 'する</button>';
+    }).join('');
+    return '<li class="admin-item s-' + (x.status === '掲載' ? '公開' : x.status === '外す' ? '非公開' : '未確認') + '">' +
+      '<p class="meta"><span class="badge">' + esc(x.status) + '</span>' + esc(jpDate(x.date)) + (x.words ? '　当てはまった語: ' + esc(x.words) : '') + '</p>' +
+      '<h3><a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.title || '（見出しなし）') + '</a></h3>' +
+      '<div class="acts">' + btns + '</div></li>';
+  }
+
+  function drawLinks() {
+    var ins = document.getElementById('insta-list');
+    ins.innerHTML = links.insta.length ? links.insta.map(function (x) { return linkItem('insta', x); }).join('') : '<li class="empty">まだありません。</li>';
+    var counts = { '': links.school.length };
+    ['候補', '掲載', '外す'].forEach(function (s) { counts[s] = links.school.filter(function (x) { return x.status === s; }).length; });
+    document.getElementById('school-filter').innerHTML = ['候補', '掲載', '外す', ''].map(function (s) {
+      return '<button type="button" data-sf="' + s + '" aria-pressed="' + (schoolFilter === s) + '">' + (s || 'すべて') + '（' + counts[s] + '）</button>';
+    }).join('') + '<button type="button" class="reload" data-lreload="1">読みこみ直す</button>';
+    var shown = links.school.filter(function (x) { return !schoolFilter || x.status === schoolFilter; });
+    document.getElementById('school-list').innerHTML = shown.length ? shown.map(function (x) { return linkItem('school', x); }).join('') : '<li class="empty">この中には記事がありません。</li>';
+  }
+
+  linkBody.addEventListener('click', function (ev) {
+    var f = ev.target.closest('button[data-sf]');
+    if (f) { schoolFilter = f.dataset.sf; drawLinks(); return; }
+    if (ev.target.closest('button[data-lreload]')) { loadLinks(); return; }
+    var b = ev.target.closest('button[data-ls]');
+    if (!b) return;
+    var kind = b.dataset.kind, url = b.dataset.url, to = b.dataset.ls;
+    linkBody.querySelectorAll('.admin-item button').forEach(function (e) { e.disabled = true; });
+    say('「' + to + '」にしています…');
+    api({ action: 'admin_link_set', kind: kind, url: url, status: to }).then(function () {
+      links[kind].forEach(function (x) { if (x.url === url) x.status = to; });
+      say('「' + to + '」にしました。' + (to === '掲載' ? 'サイトにもすぐ出ます。' : ''));
+      drawLinks();
+    }, function (err) { drawLinks(); fail(err); });
+  });
+
+  function addLink(form, action, kind) {
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var payload = { action: action, url: form.url.value.trim(), date: form.date.value, title: form.title.value.trim() };
+      if (!payload.url) { say(ERRORS.bad_url, true); return; }
+      if (!payload.date) { say(ERRORS.bad_date, true); return; }
+      if (!payload.title) { say('見出し（タイトル）を入れてください。', true); return; }
+      form.querySelector('button').disabled = true;
+      say('足しています…');
+      api(payload).then(function (d) {
+        form.reset();
+        form.querySelector('button').disabled = false;
+        if (kind === 'school') schoolFilter = '掲載';
+        loadLinks();
+        setTimeout(function () { say('足して、サイトに載せました。'); }, 1500);
+      }, function (err) { form.querySelector('button').disabled = false; fail(err); });
+    });
+  }
+  addLink(document.getElementById('insta-add'), 'admin_insta_add', 'insta');
+  addLink(document.getElementById('school-add'), 'admin_school_add', 'school');
 
   mode();
 })();
