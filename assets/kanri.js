@@ -6,7 +6,7 @@
   var ERRORS = {
     bad_passcode: '管理用の合言葉がちがいます。',
     too_many: '合言葉のまちがいが多いため、しばらく受け付けていません。1時間ほどあけてください。',
-    not_ready: '管理用の合言葉がまだ決まっていません（GAS で setAdminPasscode を実行してください）。',
+    not_ready: '管理用の合言葉がまだ使えません（GAS のスクリプト プロパティに、12文字以上で投稿用と別のものを書いてください）。',
     not_found: 'その記事が見つかりません。一覧を読みこみ直してください。',
     bad_date: '日付を入れてください。',
     bad_activity: '活動名を選んでください。',
@@ -28,6 +28,7 @@
   var PHOTO_SIZE = 1600;
   var thumbs = {};     // 写真の見本（ID → data URL）
   var editing = null;  // 直している記事の ID
+  var confirming = null; // 「公開にする」の前に中身を見せている記事の ID（千葉さんの点検、2026-10-18）
   var edit = null;     // 直している中身 { photos: [{ keep: ID } | { data: JPEG の data URL }], changed: 写真を変えたか }
   var STATUSES = ['未確認', '公開', '非公開'];
   var section = document.getElementById('naosu');
@@ -135,9 +136,38 @@
         '<p class="sub">書いた人: ' + esc(x.writer) + '　写真: ' + x.photos.length + '枚' + (x.memo ? '　メモ: ' + esc(x.memo) : '') + '</p>' +
         '<div class="acts">' + btns + '<button type="button" class="button button-ghost" data-edit="' + esc(x.id) + '">' + (editing === x.id ? '直すのをやめる' : '文字・写真を直す') + '</button>' +
         (x.status === '公開' ? '<a href="kiji.html?id=' + encodeURIComponent(x.id) + '" target="_blank" rel="noopener">サイトで見る</a>' : '') + '</div>' +
+        (confirming === x.id ? confirmBox(x) : '') +
         (editing === x.id ? editor(x) : '') +
         '</li>';
     }).join('') : '<li class="empty">この中には記事がありません。</li>';
+  }
+
+  // ─── 公開の前の確かめ（写真と本文を見せてから決める） ───
+  function confirmBox(x) {
+    var caps = String(x.captions || '').split(/\r?\n/);
+    var ph = x.photos.map(function (pid, i) {
+      return '<li><figure>' + (thumbs[pid] ? '<img src="' + thumbs[pid] + '" alt="' + (i + 1) + '枚目">' : '<span class="loading">読みこみ中…</span>') +
+        '<figcaption>' + esc(caps[i] || (i + 1) + '枚目') + '</figcaption></figure></li>';
+    }).join('');
+    return '<div class="admin-confirm" role="group" aria-label="公開の前の確かめ">' +
+      '<p class="label-like">この内容で公開しますか？</p>' +
+      (ph ? '<ul class="admin-photos">' + ph + '</ul>' : '<p class="sub">写真はありません。</p>') +
+      '<p class="body">' + esc(x.body).replace(/\r?\n/g, '<br>') + '</p>' +
+      '<p class="hint">顔が映っていないか（または同意があるか）、生徒の名前や名札が出ていないかを見てください。</p>' +
+      '<div class="acts"><button type="button" class="button" data-id="' + esc(x.id) + '" data-s="公開" data-ok="1">この内容で公開</button>' +
+      '<button type="button" class="button button-ghost" data-cancel="1">やめる</button></div></div>';
+  }
+
+  function openConfirm(x) {
+    confirming = x.id;
+    draw();
+    x.photos.forEach(function (pid) {
+      if (thumbs[pid]) return;
+      api({ action: 'admin_photo', photo: pid }).then(function (d) {
+        thumbs[pid] = 'data:' + d.mime + ';base64,' + d.data;
+        if (confirming === x.id) draw();
+      }, function () { /* 見本が出なくても公開はできる */ });
+    });
   }
 
   // ─── 文字と写真を直す ───
@@ -283,10 +313,13 @@
     if (e) { openEditor(e.dataset.edit); return; }
     var rm = ev.target.closest('button[data-ph-remove]');
     if (rm && edit) { edit.photos.splice(Number(rm.dataset.phRemove), 1); edit.changed = true; redrawEditor(); return; }
+    if (ev.target.closest('button[data-cancel]')) { confirming = null; draw(); return; }
     var b = ev.target.closest('button[data-id]');
     if (!b) return;
     var x = items.filter(function (i) { return i.id === b.dataset.id; })[0];
     var to = b.dataset.s;
+    if (to === '公開' && !b.dataset.ok && x) { openConfirm(x); return; }
+    confirming = null;
     listEl.querySelectorAll('button').forEach(function (e) { e.disabled = true; });
     say('「' + to + '」にしています…' + (to === '公開' ? '（写真の準備に30秒ほどかかることがあります）' : ''));
     api({ action: 'admin_set', id: b.dataset.id, status: to }).then(function (d) {

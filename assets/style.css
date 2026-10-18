@@ -254,6 +254,8 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .admin-item.s-未確認 .badge { background: #f7e1df; color: var(--shu); }
 .admin-item.s-非公開 .badge { background: #eceae4; color: var(--muted); }
 .admin-item details { margin: 0 0 8px; font-size: 14px; }
+.admin-confirm { margin: 12px 0 4px; padding: 12px 14px; border: 2px solid var(--accent); border-radius: var(--radius); background: var(--accent-soft); }
+.admin-confirm .body { margin: 8px 0; font-size: 15px; overflow-wrap: anywhere; }
 .admin-item .body { margin: 8px 0 0; }
 .admin-item .acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
 .admin-item .acts .button { font-size: 14px; padding: 8px 14px; border: 0; cursor: pointer; }
