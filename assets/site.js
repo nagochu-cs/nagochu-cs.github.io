@@ -65,8 +65,13 @@
       if (!d.ok) throw new Error(d.error);
       return 'data:' + d.mime + ';base64,' + d.data;
     });
-    photoCache[id].then(function (src) { img.src = src; img.classList.add('loaded'); },
-      function () { img.closest('figure') && img.closest('figure').classList.add('photo-error'); });
+    // 待つ間は「写真を読み込み中…」を出す（1枚1.5〜2.5秒かかるため。2026-10-18）
+    var box = img.parentNode, wait = box.querySelector('.ph-wait');
+    photoCache[id].then(function (src) { img.src = src; img.classList.add('loaded'); if (wait) wait.remove(); },
+      function () {
+        if (wait) wait.textContent = '写真を表示できませんでした';
+        img.closest('figure') && img.closest('figure').classList.add('photo-error');
+      });
   }
   var io = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
     es.forEach(function (e) { if (e.isIntersecting) { io.unobserve(e.target); loadPhoto(e.target); } });
@@ -75,11 +80,12 @@
     root.querySelectorAll('img[data-photo]').forEach(function (img) { io ? io.observe(img) : loadPhoto(img); });
   }
 
+  var WAIT = '<span class="ph-wait" aria-hidden="true">写真を読み込み中…</span>';
   function card(a) {
     var ph = a.photos && a.photos[0];
     return '<article class="card">' +
       '<a href="kiji.html?id=' + encodeURIComponent(a.id) + '">' +
-      '<div class="card-photo">' + (ph ? '<img data-photo="' + esc(ph.id) + '" alt="' + esc(ph.caption || a.title) + '">' : '<span class="no-photo">' + esc(a.activity) + '</span>') + '</div>' +
+      '<div class="card-photo">' + (ph ? '<img data-photo="' + esc(ph.id) + '" alt="' + esc(ph.caption || a.title) + '">' + WAIT : '<span class="no-photo">' + esc(a.activity) + '</span>') + '</div>' +
       '<div class="card-body">' +
       '<p class="meta"><span class="tag tag-' + slugOf(a.activity) + '">' + esc(a.activity) + '</span><time>' + jpDate(a.date) + '</time></p>' +
       '<h3>' + esc(a.title) + '</h3>' +
@@ -173,7 +179,7 @@
         '<h1>' + esc(a.title) + '</h1>' +
         '<div class="article-body"><p>' + para(a.body) + '</p></div>' +
         (a.photos || []).map(function (p) {
-          return '<figure><img data-photo="' + esc(p.id) + '" alt="' + esc(p.caption || '') + '">' + (p.caption ? '<figcaption>' + esc(p.caption) + '</figcaption>' : '') + '</figure>';
+          return '<figure><div class="ph-box"><img data-photo="' + esc(p.id) + '" alt="' + esc(p.caption || '') + '">' + WAIT + '</div>' + (p.caption ? '<figcaption>' + esc(p.caption) + '</figcaption>' : '') + '</figure>';
         }).join('');
       watchPhotos(box);
     }, function (err) { showError(box, err); });
@@ -272,6 +278,9 @@
     });
     return dlg;
   }
+  // 詳細（ひとこと）の下、画像の前には、いつも同じ形で「関わりたい方へ」への入り口を出す（集合時間などを読んだ人が、そのまま申し込めるように。2026-10-18）
+  var HELP = '<div class="news-help"><p>手伝いたい方・参加したい方は、「関わりたい方へ」のフォームからご連絡ください。</p>' +
+    '<a class="button" href="kakawaru.html">手伝いたい方はこちら</a></div>';
   function openNews(id) {
     var x = newsById[id];
     if (!x || typeof HTMLDialogElement === 'undefined') return false;
@@ -282,7 +291,7 @@
       '<button type="button" class="news-close" aria-label="閉じる">×</button>' +
       '<div class="news-dialog-head">' + newsDate(x) + '<div><span class="news-kind">' + esc(x.kind) + '</span><h2 id="news-dialog-title">' + esc(x.title) + '</h2>' +
       (meta ? '<p class="news-meta">' + meta + '</p>' : '') + '</div></div>' +
-      (x.body ? '<p class="news-body">' + para(x.body) + '</p>' : '') + link +
+      (x.body ? '<p class="news-body">' + para(x.body) + '</p>' : '') + link + HELP +
       imgs.map(function (im) {
         return '<figure><a href="' + esc(im.src) + '" target="_blank" rel="noopener"><img src="' + esc(im.src) + '" alt="' + esc(im.alt || '') + '" loading="lazy"></a>' +
           (im.alt ? '<figcaption>' + esc(im.alt) + '（押すと原寸で開きます）</figcaption>' : '') + '</figure>';
@@ -311,6 +320,8 @@
         sec.hidden = !sec.querySelector('.news-item');
       });
     }
+    // トップの節は、読み込む間も高さをとっておく（あとから下の記事を押し下げないように。2026-10-18）
+    function ready() { document.querySelectorAll('.news-top.is-loading').forEach(function (sec) { sec.classList.remove('is-loading'); }); }
     api({ news: 1 }).then(function (d) {
       if (!d.ok) throw new Error(d.error);
       var t = today();
@@ -336,8 +347,10 @@
         c.classList.toggle('one', c.querySelectorAll('.news-col:not([hidden])').length === 1);
       });
       hideEmpty();
+      ready();
       if (location.hash.length > 1 && /oshirase\.html$/.test(location.pathname)) openNews(decodeURIComponent(location.hash.slice(1)));
     }).catch(function () {
+      ready();
       document.querySelectorAll('[data-news-section]').forEach(function (sec) { sec.hidden = true; });
       boxes.forEach(function (el) { if (el.getAttribute('data-empty')) el.innerHTML = '<li class="empty">読み込めませんでした。時間をおいて開き直してください。</li>'; });
     });

@@ -1,4 +1,5 @@
 /* a4b.jp 名護中学校コミュニティスクール */
+/* 灰色の補足の文字は 14px 以上（2026-10-18 玉城さんの指摘） */
 :root {
   /* B案「学場真素」（2026-10-18）: 生成りの紙に紺と朱 */
   --bg: #f6f3ec;
@@ -30,6 +31,9 @@ img { max-width: 100%; display: block; }
 .brand img { width: 44px; height: 44px; flex: none; border-radius: 50%; background: #fff; }
 .brand span { font-weight: 700; line-height: 1.3; font-size: 15px; }
 .brand small { display: block; font-weight: 400; font-size: 11px; color: var(--muted); }
+.brand .b-short { display: none; }
+/* 375px などでは「名護中学校CS」と短く（2026-10-18） */
+@media (max-width: 420px) { .brand .b-long { display: none; } .brand .b-short { display: inline; } }
 .site-nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 4px; flex-wrap: wrap; }
 .site-nav a { display: block; padding: 8px 12px; border-radius: 2px; color: var(--text); text-decoration: none; font-size: 15px; }
 .site-nav a:hover { background: var(--accent-soft); }
@@ -52,8 +56,19 @@ img { max-width: 100%; display: block; }
 .b-kun span { font-size: 13px; color: var(--muted); letter-spacing: .1em; }
 .b-lead h1 { font-size: clamp(24px, 6vw, 36px); line-height: 1.6; margin: 0 0 12px; }
 .b-lead p { margin: 0 0 16px; }
-.b-lead .seal { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+.b-lead .seal { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); margin-bottom: 14px; }
 .b-lead .seal img { width: 40px; height: 40px; }
+/* スマホでは見出しと説明を先に、校訓は小さくして下へ（2026-10-18 玉城さんの指摘） */
+@media (max-width: 760px) {
+  .b-hero { padding: 24px 0 20px; }
+  .b-hero .wrap { gap: 18px; }
+  .b-lead { order: -1; }
+  .b-kun { gap: 6px; }
+  .b-kun li { padding: 8px 4px; gap: 6px; }
+  .b-kun b { font-size: 28px; }
+  .b-kun span { font-size: 13px; letter-spacing: .05em; }
+  .hero-actions { margin-top: 16px; }
+}
 @media (min-width: 761px) { .b-hero { padding: 64px 0 48px; } .b-hero .wrap { grid-template-columns: 1fr 1.1fr; gap: 48px; } }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
 .b-photo { aspect-ratio: 980 / 380; border: 8px solid var(--surface); box-shadow: 0 1px 0 var(--line), 0 10px 30px rgba(30,34,48,.08); }
@@ -69,7 +84,7 @@ img { max-width: 100%; display: block; }
 /* 写真（学校HPの写真。顔が映っていないものだけ） */
 .ph { margin: 0; position: relative; overflow: hidden; }
 .ph img { width: 100%; height: 100%; object-fit: cover; }
-.ph figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 12px 8px; font-size: 12px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.6)); line-height: 1.5; }
+.ph figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 12px 8px; font-size: 14px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.6)); line-height: 1.5; }
 .gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .gallery .ph { aspect-ratio: 4 / 3; border-radius: 2px; }
 @media (min-width: 761px) { .gallery { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
@@ -98,11 +113,15 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .card-photo { aspect-ratio: 4 / 3; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .card-photo img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .3s; }
 .card-photo img.loaded { opacity: 1; }
+.card-photo, .article .ph-box { position: relative; }
+.article .ph-box img:not(.loaded) { visibility: hidden; } /* 待つ間に alt の文字が重ならないように */
+/* 写真を待つ間の文字（2026-10-18） */
+.ph-wait { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 8px; font-size: 14px; color: var(--muted); text-align: center; pointer-events: none; }
 .no-photo { color: var(--accent); font-weight: 700; padding: 16px; text-align: center; }
 .card-body { padding: 14px 16px 18px; }
 .card-body h3 { font-size: 17px; line-height: 1.5; margin: 6px 0; }
 .card-body p { margin: 0; font-size: 14px; color: var(--muted); }
-.meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin: 0; }
+.meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; color: var(--muted); margin: 0; }
 .tag { display: inline-block; padding: 1px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 700; text-decoration: none; }
 .tag-asagohan { background: #fdf0d8; color: #9a5a00; }
 .tag-tentabaru { background: #e8eefb; color: #2f4f9a; }
@@ -123,6 +142,7 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .article figure img { width: 100%; border-radius: var(--radius); background: var(--accent-soft); min-height: 120px; }
 .article figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; }
 .photo-error img { display: none; }
+.photo-error .ph-box { min-height: 120px; background: var(--accent-soft); border-radius: var(--radius); }
 .back { display: inline-block; margin-top: 24px; }
 
 /* 活動の紹介 */
@@ -152,7 +172,7 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 /* まだ決まっていない所（公開前に消す） */
 .tbd { background: #fff2cc; border-radius: 4px; padding: 0 4px; font-size: .9em; color: #7a5a00; }
 
-.site-footer { border-top: 1px solid var(--line); margin-top: 40px; padding: 24px 0 40px; font-size: 13px; color: var(--muted); }
+.site-footer { border-top: 1px solid var(--line); margin-top: 40px; padding: 24px 0 40px; font-size: 14px; color: var(--muted); }
 .site-footer p { margin: 0 0 8px; }
 .site-footer a { color: var(--accent); }
 .foot-cols { display: grid; gap: 20px; grid-template-columns: 1fr; }
@@ -160,7 +180,7 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .foot-name { font-weight: 700; color: var(--text); }
 .foot-h { font-weight: 700; color: var(--text); }
 .foot-links { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.foot-updated { margin-top: 16px !important; font-size: 12px; }
+.foot-updated { margin-top: 16px !important; font-size: 14px; }
 
 /* 数字で見る CS（トップ） */
 .stats { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); }
@@ -168,9 +188,9 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .stats li { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--shu); padding: 16px 12px; text-align: center; display: flex; flex-direction: column; gap: 6px; }
 .stats .num { font-size: clamp(36px, 10vw, 52px); line-height: 1; font-weight: 700; color: var(--accent); }
 .stats .num small { font-size: .4em; margin-left: 2px; color: var(--text); }
-.stats .lbl { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.stats .lbl { font-size: 14px; color: var(--muted); line-height: 1.5; }
 .stats-h { font-size: 17px; margin: 22px 0 10px; color: var(--accent); }
-.stats-h small { font-size: 13px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+.stats-h small { font-size: 14px; color: var(--muted); font-weight: 400; margin-left: 4px; }
 .stats.stats-3 { grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stats.stats-3 li { padding: 14px 6px; }
 .stats.stats-3 .num { font-size: clamp(28px, 8vw, 46px); }
@@ -256,12 +276,12 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .link-list-admin h3 a { color: var(--text); }
 /* 活動の実績は控えめに（2026-10-18 社長: 目立ちすぎるので小さく、下の方へ） */
 .stats-sec .stats-h { font-size: 15px; margin: 16px 0 6px; }
-.stats-sec .stats-h small { font-size: 12px; }
+.stats-sec .stats-h small { font-size: 14px; }
 .stats-sec .stats.stats-3 { gap: 6px; max-width: 560px; margin-bottom: 6px; }
 .stats-sec .stats li { border-top-width: 1px; border-top-color: var(--line); padding: 8px 6px; gap: 2px; }
 .stats-sec .stats.stats-3 .num, .stats-sec .stats .num.num-long { font-size: 22px; }
-.stats-sec .stats .lbl { font-size: 12px; }
-.stats-sec .note { font-size: 12px; }
+.stats-sec .stats .lbl { font-size: 14px; }
+.stats-sec .note { font-size: 14px; }
 
 /* 私たちについて（2026-10-18 メニュー A案） */
 .page-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; }
@@ -276,7 +296,7 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .cs-kyodo { border-top: 4px solid var(--shu); }
 .cs-kyodo .cs-h { color: var(--shu); }
 .cs-center { grid-column: 1 / -1; text-align: center; background: var(--accent-soft); }
-.cs-arrow { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; text-align: center; }
+.cs-arrow { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; text-align: center; }
 .cs-arrow span::after { content: "↓"; display: block; font-size: 22px; color: var(--accent); }
 @media (min-width: 761px) {
   .cs-fig { grid-template-columns: 1fr 120px 1fr; }
@@ -290,7 +310,7 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .iin-list li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
 .iin-list .ph { aspect-ratio: 1; margin-bottom: 10px; }
 .iin-list p { margin: 0 0 4px; font-size: 15px; }
-.iin-role { color: var(--muted); font-size: 13px !important; }
+.iin-role { color: var(--muted); font-size: 14px !important; }
 .iin-name { font-weight: 700; }
 .faq details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 8px; }
 .faq summary { cursor: pointer; padding: 14px 16px; font-weight: 700; color: var(--accent); }
@@ -318,8 +338,8 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .k-yotei .news-date { border-top: 3px solid var(--shu); }
 .news-main { min-width: 0; }
 .news-main h3 { margin: 2px 0 2px; font-size: 16px; line-height: 1.45; color: var(--accent); }
-.news-main .news-meta { margin: 0; font-size: 13px; line-height: 1.5; }
-.news-more { display: inline-block; margin-top: 2px; font-size: 12px; color: var(--shu); }
+.news-main .news-meta { margin: 0; font-size: 14px; line-height: 1.5; }
+.news-more { display: inline-block; margin-top: 2px; font-size: 14px; color: var(--shu); }
 .news-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--line); }
 .news-kind { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
 .k-yotei .news-kind { background: #f6e3e1; color: var(--shu); }
@@ -333,6 +353,9 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
   .news-list:not(:has(.empty)) > li { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
   .news-list:not(:has(.empty)) .news-open { height: 100%; box-sizing: border-box; }
 }
+.news-top.is-loading .news-cols { min-height: 560px; }
+.news-top.is-loading .news-col { visibility: hidden; }
+@media (min-width: 761px) { .news-top.is-loading .news-cols { min-height: 220px; } }
 .news-col-h { font-size: 16px; margin: 0 0 8px; color: var(--accent); }
 /* 詳細（押したときに開く） */
 .news-dialog { width: min(720px, calc(100% - 24px)); max-height: calc(100% - 32px); padding: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text); }
@@ -347,5 +370,8 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .news-link { margin: 0 0 14px; }
 .news-dialog figure { margin: 0 0 16px; }
 .news-dialog figure img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: var(--radius); }
-.news-dialog figcaption { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.news-dialog figcaption { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.news-help { margin: 0 0 16px; padding: 14px 16px; border: 1px solid var(--line); border-left: 4px solid var(--shu); border-radius: var(--radius); background: var(--bg); }
+.news-help p { margin: 0 0 10px; font-size: 15px; }
+.news-help .button { margin: 0; }
 .news-past summary { cursor: pointer; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
