@@ -56,6 +56,9 @@ img { max-width: 100%; display: block; }
 .b-kun span { font-size: 13px; color: var(--muted); letter-spacing: .1em; }
 .b-lead h1 { font-size: clamp(24px, 6vw, 36px); line-height: 1.6; margin: 0 0 12px; }
 .b-lead p { margin: 0 0 16px; }
+/* スマホだけ h1 の下に一文（2026-10-18 社長決定。PC は下の説明で足りる） */
+.b-tagline { display: none; }
+@media (max-width: 760px) { .b-lead .b-tagline { display: block; font-weight: 700; margin: -4px 0 12px; } }
 .b-lead .seal { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); margin-bottom: 14px; }
 .b-lead .seal img { width: 40px; height: 40px; }
 /* スマホでは見出しと説明を先に、校訓は小さくして下へ（2026-10-18 玉城さんの指摘） */
