@@ -210,15 +210,69 @@
     var d = new Date();
     return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
   }
-  function newsItem(x) {
+  // 一覧は日付・見出し・時間と場所・小さな画像だけ。押すと oshirase.html の詳細（ひとこと・大きな画像・リンク）が開く（2026-10-18）
+  // 画像はシートではなく config.js の NEWS_IMAGES（ID ごと）
+  var newsById = {};
+  function newsImages(x) { return ((window.A4B_CONFIG || {}).NEWS_IMAGES || {})[x.id] || []; }
+  function newsDate(x) {
     var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(x.date) || [];
     var w = m.length ? '日月火水木金土'.charAt(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getDay()) : '';
-    var title = x.url ? '<a href="' + esc(x.url) + '"' + (/^https?:\/\/nagochu-cs\.github\.io\//.test(x.url) ? '' : ' target="_blank" rel="noopener"') + '>' + esc(x.title) + '</a>' : esc(x.title);
-    var meta = [x.time, x.place].filter(Boolean).map(esc).join('　');
+    return '<p class="news-date"><span class="y">' + (m[1] || '') + '</span><span class="md">' + Number(m[2]) + '/' + Number(m[3]) + '</span><span class="w">(' + w + ')</span></p>';
+  }
+  function newsMeta(x) { return [x.time, x.place].filter(Boolean).map(esc).join('　'); }
+  function newsItem(x) {
+    var meta = newsMeta(x), img = newsImages(x)[0];
     return '<li class="news-item k-' + (x.kind === '予定' ? 'yotei' : 'oshirase') + '">' +
-      '<p class="news-date"><span class="y">' + (m[1] || '') + '</span><span class="md">' + Number(m[2]) + '/' + Number(m[3]) + '</span><span class="w">(' + w + ')</span></p>' +
-      '<div class="news-main"><span class="news-kind">' + esc(x.kind) + '</span><h3>' + title + '</h3>' +
-      (meta ? '<p class="news-meta">' + meta + '</p>' : '') + (x.body ? '<p>' + para(x.body) + '</p>' : '') + '</div></li>';
+      '<a class="news-open" href="oshirase.html#' + encodeURIComponent(x.id) + '" data-news-id="' + esc(x.id) + '">' + newsDate(x) +
+      '<div class="news-main"><span class="news-kind">' + esc(x.kind) + '</span><h3>' + esc(x.title) + '</h3>' +
+      (meta ? '<p class="news-meta">' + meta + '</p>' : '') + '<span class="news-more">くわしく見る</span></div>' +
+      (img ? '<img class="news-thumb" src="' + esc(img.src) + '" alt="" loading="lazy">' : '') + '</a></li>';
+  }
+  function newsDialog() {
+    var dlg = document.querySelector('.news-dialog');
+    if (dlg) return dlg;
+    dlg = document.createElement('dialog');
+    dlg.className = 'news-dialog';
+    dlg.setAttribute('aria-labelledby', 'news-dialog-title');
+    document.body.appendChild(dlg);
+    dlg.addEventListener('click', function (e) {
+      if (e.target === dlg || e.target.closest('.news-close')) dlg.close(); // 外側か「閉じる」を押したら閉じる
+    });
+    dlg.addEventListener('close', function () {
+      if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    });
+    return dlg;
+  }
+  function openNews(id) {
+    var x = newsById[id];
+    if (!x || typeof HTMLDialogElement === 'undefined') return false;
+    var meta = newsMeta(x), imgs = newsImages(x);
+    var link = x.url ? '<p class="news-link"><a class="button" href="' + esc(x.url) + '"' + (/^https?:\/\/nagochu-cs\.github\.io\//.test(x.url) ? '' : ' target="_blank" rel="noopener"') + '>関連するページを開く</a></p>' : '';
+    var dlg = newsDialog();
+    dlg.innerHTML = '<div class="news-dialog-in k-' + (x.kind === '予定' ? 'yotei' : 'oshirase') + '">' +
+      '<button type="button" class="news-close" aria-label="閉じる">×</button>' +
+      '<div class="news-dialog-head">' + newsDate(x) + '<div><span class="news-kind">' + esc(x.kind) + '</span><h2 id="news-dialog-title">' + esc(x.title) + '</h2>' +
+      (meta ? '<p class="news-meta">' + meta + '</p>' : '') + '</div></div>' +
+      (x.body ? '<p class="news-body">' + para(x.body) + '</p>' : '') + link +
+      imgs.map(function (im) {
+        return '<figure><a href="' + esc(im.src) + '" target="_blank" rel="noopener"><img src="' + esc(im.src) + '" alt="' + esc(im.alt || '') + '" loading="lazy"></a>' +
+          (im.alt ? '<figcaption>' + esc(im.alt) + '（押すと原寸で開きます）</figcaption>' : '') + '</figure>';
+      }).join('') + '</div>';
+    dlg.showModal();
+    dlg.scrollTop = 0;
+    return true;
+  }
+  // お知らせのページの中では、押したらその場で詳細を開く（ほかのページからは oshirase.html#ID へ移ってから開く）
+  function setupNewsOpen() {
+    if (!/oshirase\.html$/.test(location.pathname)) return;
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a.news-open');
+      if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (openNews(a.getAttribute('data-news-id'))) {
+        e.preventDefault();
+        history.replaceState(null, '', '#' + encodeURIComponent(a.getAttribute('data-news-id')));
+      }
+    });
   }
   function fillNews() {
     var boxes = document.querySelectorAll('[data-news]');
@@ -231,6 +285,7 @@
     api({ news: 1 }).then(function (d) {
       if (!d.ok) throw new Error(d.error);
       var t = today();
+      d.items.forEach(function (x) { newsById[x.id] = x; });
       boxes.forEach(function (el) {
         var spec = el.getAttribute('data-news').split(':');
         var n = Number(spec[1]) || 0;
@@ -247,7 +302,12 @@
         var col = el.closest('.news-col');
         if (col) col.hidden = true;
       });
+      // 予定かお知らせの片方だけなら、横いっぱいに並べる
+      document.querySelectorAll('.news-cols').forEach(function (c) {
+        c.classList.toggle('one', c.querySelectorAll('.news-col:not([hidden])').length === 1);
+      });
       hideEmpty();
+      if (location.hash.length > 1 && /oshirase\.html$/.test(location.pathname)) openNews(decodeURIComponent(location.hash.slice(1)));
     }).catch(function () {
       document.querySelectorAll('[data-news-section]').forEach(function (sec) { sec.hidden = true; });
       boxes.forEach(function (el) { if (el.getAttribute('data-empty')) el.innerHTML = '<li class="empty">読み込めませんでした。時間をおいて開き直してください。</li>'; });
@@ -255,6 +315,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    setupNav(); setupContact(); fillBoxes(); setupFilter(); setupArticle(); fillLinks('data-school', 'school'); fillLinks('data-insta', 'insta'); fillNews();
+    setupNav(); setupContact(); fillBoxes(); setupFilter(); setupArticle(); fillLinks('data-school', 'school'); fillLinks('data-insta', 'insta'); fillNews(); setupNewsOpen();
   });
 })();

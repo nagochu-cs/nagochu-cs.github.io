@@ -12,4 +12,18 @@ window.A4B_CONFIG = {
     { name: '放課後学習支援', slug: 'gakushu' },
     { name: '講演会・特別授業', slug: 'kouen' },
   ],
+  // お知らせの画像（2026-10-18）。キーはシート「お知らせ」の ID。1枚目が一覧の小さな画像になる。画像は assets/news/ に置く
+  NEWS_IMAGES: {
+    n2026101815000011: [
+      { src: 'assets/news/asagohan-20261021.jpg', alt: '10月21日の献立の見本（ピーマンとツナの和え物・ジャーマンポテト・味噌汁・ご飯）' },
+      { src: 'assets/news/asagohan-20261021-kondate.jpg', alt: '10月21日のカロリー内訳の表' },
+    ],
+    n2026101815000012: [
+      { src: 'assets/news/asagohan-20261028.jpg', alt: '10月28日の献立の見本（キャベツと卵の中華スープ・豚の生姜焼き・野菜サラダ・ご飯）' },
+      { src: 'assets/news/asagohan-20261028-kondate.jpg', alt: '10月28日のカロリー内訳の表' },
+    ],
+    n2026101815000013: [
+      { src: 'assets/news/tentabaru-20261028.jpg', alt: 'てんたばる学校地域講座（10月28日）のチラシ' },
+    ],
+  },
 };
