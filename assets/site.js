@@ -193,7 +193,8 @@
   function setupNav() {
     var here = location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('.site-nav a').forEach(function (a) {
-      if (a.getAttribute('href') === here || (here === 'kiji.html' && a.getAttribute('href') === 'katsudo.html')) a.setAttribute('aria-current', 'page');
+      // 記事の一覧（katsudo）と記事（kiji）は、メニューでは「活動」の中
+      if (a.getAttribute('href') === here || ((here === 'kiji.html' || here === 'katsudo.html') && a.getAttribute('href') === 'shokai.html')) a.setAttribute('aria-current', 'page');
     });
     var t = document.querySelector('.nav-toggle');
     if (t) t.addEventListener('click', function () {
