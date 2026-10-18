@@ -114,6 +114,23 @@
     }, function (err) { boxes.forEach(function (el) { showError(el, err); }); });
   }
 
+  // 活動の紹介: data-count="活動名" のリンクに記事の本数を添える。0本なら「まだありません」にする（2026-10-18）
+  function fillCounts() {
+    var links = document.querySelectorAll('[data-count]');
+    if (!links.length) return;
+    getArticles().then(function (list) {
+      links.forEach(function (a) {
+        var name = a.getAttribute('data-count');
+        var n = list.filter(function (x) { return x.activity === name; }).length;
+        if (n) { a.textContent = 'この活動の記事を見る（' + n + '本）→'; return; }
+        var p = document.createElement('span');
+        p.className = 'note';
+        p.textContent = 'この活動の記事は、まだありません。';
+        a.replaceWith(p);
+      });
+    }, function () { /* 読めないときはリンクのまま */ });
+  }
+
   // 記事一覧ページ: 活動名で絞り込む
   function setupFilter() {
     var bar = document.getElementById('filter');
@@ -164,6 +181,7 @@
 
   // data-school="5" / "all" のついた箱に学校のホームページの CS 記事を、
   // data-insta="5" / "all" の箱に学生ボランティアの Instagram の投稿を、リンクで並べる（なければ節ごと隠す）
+  // "3+" は3件だけ出し、残りは「すべて見る」で開く（2026-10-18）
   function fillLinks(attr, param) {
     var boxes = document.querySelectorAll('[' + attr + ']');
     if (!boxes.length) return;
@@ -172,12 +190,23 @@
       if (!d.ok) throw new Error(d.error);
       boxes.forEach(function (el) {
         var n = el.getAttribute(attr);
-        var items = n === 'all' ? d.items : d.items.slice(0, Number(n) || 5);
+        var fold = /\+$/.test(n) ? parseInt(n, 10) : 0;
+        var items = n === 'all' || fold ? d.items : d.items.slice(0, Number(n) || 5);
         var section = el.closest('section');
         if (!items.length) { if (section) section.hidden = true; return; }
-        el.innerHTML = items.map(function (x) {
-          return '<li><time>' + jpDate(x.date) + '</time><a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.title) + '</a></li>';
+        el.innerHTML = items.map(function (x, i) {
+          return '<li' + (fold && i >= fold ? ' hidden' : '') + '><time>' + jpDate(x.date) + '</time><a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.title) + '</a></li>';
         }).join('');
+        if (fold && items.length > fold) {
+          var p = document.createElement('p');
+          p.className = 'more';
+          p.innerHTML = '<button type="button" class="link-button">すべて見る（' + items.length + '件）</button>';
+          p.firstChild.addEventListener('click', function () {
+            el.querySelectorAll('li[hidden]').forEach(function (li) { li.hidden = false; });
+            p.remove();
+          });
+          el.after(p);
+        }
       });
     }).catch(function () {
       boxes.forEach(function (el) { var s = el.closest('section'); if (s) s.hidden = true; });
@@ -315,6 +344,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    setupNav(); setupContact(); fillBoxes(); setupFilter(); setupArticle(); fillLinks('data-school', 'school'); fillLinks('data-insta', 'insta'); fillNews(); setupNewsOpen();
+    setupNav(); setupContact(); fillBoxes(); fillCounts(); setupFilter(); setupArticle(); fillLinks('data-school', 'school'); fillLinks('data-insta', 'insta'); fillNews(); setupNewsOpen();
   });
 })();
