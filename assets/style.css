@@ -300,3 +300,24 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 /* 材料待ちの仮の節（公開の前に外すか、材料を入れる） */
 [data-draft] { outline: 2px dashed var(--shu); outline-offset: 6px; }
 .greet .ph.noimg, .iin-list .ph.noimg { display: flex; align-items: center; justify-content: center; margin: 0; background: var(--accent-soft); color: var(--muted); font-size: 14px; border-radius: var(--radius); }
+
+/* 今後の予定とお知らせ（2026-10-18） */
+.news-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.news-list > li { padding: 14px 16px; border-top: 1px solid var(--line); }
+.news-list > li:first-child { border-top: 0; }
+.news-list .empty { color: var(--muted); font-size: 15px; }
+.news-item { display: grid; grid-template-columns: 64px 1fr; gap: 14px; align-items: start; }
+.news-date { margin: 0; text-align: center; border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 0; line-height: 1.2; background: var(--bg); }
+.news-date .y { display: block; font-size: 11px; color: var(--muted); }
+.news-date .md { display: block; font-size: 18px; font-weight: 700; color: var(--accent); }
+.news-date .w { display: block; font-size: 12px; color: var(--muted); }
+.k-yotei .news-date { border-top: 3px solid var(--shu); }
+.news-main h3 { margin: 2px 0 4px; font-size: 17px; line-height: 1.5; }
+.news-main p { margin: 0 0 4px; font-size: 15px; }
+.news-kind { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.k-yotei .news-kind { background: #f6e3e1; color: var(--shu); }
+.news-meta { color: var(--muted); }
+.news-cols { display: grid; gap: 20px; grid-template-columns: 1fr; }
+@media (min-width: 761px) { .news-cols { grid-template-columns: 1fr 1fr; } }
+.news-col-h { font-size: 16px; margin: 0 0 8px; color: var(--accent); }
+.news-past summary { cursor: pointer; font-weight: 700; color: var(--accent); margin-bottom: 10px; }

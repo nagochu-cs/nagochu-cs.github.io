@@ -6,10 +6,10 @@
 <title>記事を書く｜名護中学校コミュニティスクール</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="assets/img/koushou.png">
-<link rel="stylesheet" href="assets/style.css?v=11">
+<link rel="stylesheet" href="assets/style.css?v=12">
 <script src="assets/config.js"></script>
 <script src="assets/toukou.js" defer></script>
-<script src="assets/kanri.js?v=3" defer></script>
+<script src="assets/kanri.js?v=4" defer></script>
 </head>
 <body>
 <header class="site-header">
@@ -27,6 +27,7 @@
     <a href="toukou.html" id="tab-kaku" aria-current="page">記事を書く</a>
     <a href="toukou.html#naosu" id="tab-naosu">記事を直す</a>
     <a href="toukou.html#link" id="tab-link">リンクの管理</a>
+    <a href="toukou.html#news" id="tab-news">お知らせの管理</a>
   </nav>
   <form class="post-form" id="post-form" novalidate>
     <label for="f-pass">合言葉 <span class="req">必須</span></label>
@@ -118,6 +119,31 @@
         </form>
       </details>
     </div>
+    <div id="news-body" hidden>
+      <h2>予定・お知らせを足す</h2>
+      <form class="post-form admin-add" id="news-add" novalidate>
+        <label for="n-kind">種類</label>
+        <select id="n-kind" name="kind"><option value="予定">予定（日時・場所のあるもの）</option><option value="お知らせ">お知らせ（短いニュース）</option></select>
+        <label for="n-date">日付</label>
+        <input id="n-date" name="date" type="date">
+        <p class="hint">予定は、その日。お知らせは、載せる日。予定は日付が過ぎると「終わった予定」へ移ります。</p>
+        <label for="n-title">見出し</label>
+        <input id="n-title" name="title" type="text" maxlength="60" placeholder="例: 朝ごはんPJ（ボランティア募集）">
+        <label for="n-time">時間（任意）</label>
+        <input id="n-time" name="time" type="text" maxlength="30" placeholder="例: 7:30〜8:10">
+        <label for="n-place">場所（任意）</label>
+        <input id="n-place" name="place" type="text" maxlength="60" placeholder="例: 名護中学校 食堂">
+        <label for="n-body">ひとこと（任意・400字まで）</label>
+        <textarea id="n-body" name="body" rows="4" maxlength="400"></textarea>
+        <p class="hint"><strong>生徒の名前は書かない</strong>でください。</p>
+        <label for="n-url">リンク（任意）</label>
+        <input id="n-url" name="url" type="text" inputmode="url" autocomplete="off" placeholder="https://…">
+        <button class="button" type="submit">足して掲載する</button>
+      </form>
+      <h2>載せている予定・お知らせ</h2>
+      <p class="note">直したいときは「外す」にして、足し直してください。</p>
+      <ul class="admin-list link-list-admin" id="news-list"></ul>
+    </div>
   </section>
   <div class="post-done" id="post-done" hidden>
     <h2>送信しました</h2>
@@ -146,7 +172,7 @@
         </ul>
       </div>
     </div>
-    <p class="foot-staff">関係者の方へ: <a href="toukou.html">記事の管理</a>｜<a href="toukou.html#link">リンクの管理（学校HP・Instagram）</a></p>
+    <p class="foot-staff">関係者の方へ: <a href="toukou.html">記事の管理</a>｜<a href="toukou.html#link">リンクの管理（学校HP・Instagram）</a>｜<a href="toukou.html#news">お知らせの管理</a></p>
     <p class="foot-updated">最終更新: <span data-updated>2026-10-18</span></p>
   </div>
 </footer>

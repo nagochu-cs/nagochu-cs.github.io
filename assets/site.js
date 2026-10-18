@@ -203,7 +203,58 @@
     });
   }
 
+  // ─── 今後の予定とお知らせ（2026-10-18） ───
+  // data-news="upcoming:3"（これからの予定・近い順）、"news:3"（お知らせ・新しい順）、"past:10"（終わった予定・新しい順）
+  // 中身がない箱は data-empty の文を出す（data-empty がなければ箱の親 .news-col を隠す）。[data-news-section] の中が全部空なら節ごと隠す
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+  function newsItem(x) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(x.date) || [];
+    var w = m.length ? '日月火水木金土'.charAt(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getDay()) : '';
+    var title = x.url ? '<a href="' + esc(x.url) + '"' + (/^https?:\/\/nagochu-cs\.github\.io\//.test(x.url) ? '' : ' target="_blank" rel="noopener"') + '>' + esc(x.title) + '</a>' : esc(x.title);
+    var meta = [x.time, x.place].filter(Boolean).map(esc).join('　');
+    return '<li class="news-item k-' + (x.kind === '予定' ? 'yotei' : 'oshirase') + '">' +
+      '<p class="news-date"><span class="y">' + (m[1] || '') + '</span><span class="md">' + Number(m[2]) + '/' + Number(m[3]) + '</span><span class="w">(' + w + ')</span></p>' +
+      '<div class="news-main"><span class="news-kind">' + esc(x.kind) + '</span><h3>' + title + '</h3>' +
+      (meta ? '<p class="news-meta">' + meta + '</p>' : '') + (x.body ? '<p>' + para(x.body) + '</p>' : '') + '</div></li>';
+  }
+  function fillNews() {
+    var boxes = document.querySelectorAll('[data-news]');
+    if (!boxes.length) return;
+    function hideEmpty() {
+      document.querySelectorAll('[data-news-section]').forEach(function (sec) {
+        sec.hidden = !sec.querySelector('.news-item');
+      });
+    }
+    api({ news: 1 }).then(function (d) {
+      if (!d.ok) throw new Error(d.error);
+      var t = today();
+      boxes.forEach(function (el) {
+        var spec = el.getAttribute('data-news').split(':');
+        var n = Number(spec[1]) || 0;
+        var items = d.items.filter(function (x) {
+          if (spec[0] === 'news') return x.kind === 'お知らせ';
+          if (x.kind !== '予定') return false;
+          return spec[0] === 'past' ? x.date < t : x.date >= t;
+        });
+        if (spec[0] === 'upcoming') items = items.slice().reverse(); // 近い順
+        if (n) items = items.slice(0, n);
+        if (items.length) { el.innerHTML = items.map(newsItem).join(''); return; }
+        var empty = el.getAttribute('data-empty');
+        if (empty) { el.innerHTML = '<li class="empty">' + esc(empty) + '</li>'; return; }
+        var col = el.closest('.news-col');
+        if (col) col.hidden = true;
+      });
+      hideEmpty();
+    }).catch(function () {
+      document.querySelectorAll('[data-news-section]').forEach(function (sec) { sec.hidden = true; });
+      boxes.forEach(function (el) { if (el.getAttribute('data-empty')) el.innerHTML = '<li class="empty">読み込めませんでした。時間をおいて開き直してください。</li>'; });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
-    setupNav(); setupContact(); fillBoxes(); setupFilter(); setupArticle(); fillLinks('data-school', 'school'); fillLinks('data-insta', 'insta');
+    setupNav(); setupContact(); fillBoxes(); setupFilter(); setupArticle(); fillLinks('data-school', 'school'); fillLinks('data-insta', 'insta'); fillNews();
   });
 })();

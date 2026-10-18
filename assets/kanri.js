@@ -16,8 +16,12 @@
     too_many_photos: '写真は4枚までです。',
     bad_url: 'URL を確かめてください（Instagram は投稿の URL、学校は学校のホームページの記事の URL）。',
     duplicate: 'その URL は、もう入っています。',
+    bad_kind: '種類を選んでください。',
+    too_long: '時間は30字まで、場所は60字までで入れてください。',
   };
   var linkBody = document.getElementById('link-body');
+  var newsBody = document.getElementById('news-body');
+  var news = [];
   var links = null;        // { school: [...], insta: [...] }
   var schoolFilter = '候補';
   var MAX_PHOTOS = 4;
@@ -54,9 +58,10 @@
   var MODES = {
     kaku: { title: '記事を書く', lead: '活動の記事を送るページです。送った記事は、確認してからサイトに載せます。すぐには公開されません。' },
     naosu: { title: '記事を直す', lead: '届いた記事を並べ、公開・非公開の切りかえと、文字・写真の直しをするページです（管理用）。' },
+    news: { title: 'お知らせの管理', lead: '今後の予定とお知らせを、サイトに載せる・外すページです（管理用）。' },
     link: { title: 'リンクの管理', lead: '学生ボランティアの Instagram と、学校のホームページの記事を、サイトに載せる・外すページです（管理用）。' },
   };
-  function current() { return location.hash === '#naosu' ? 'naosu' : location.hash === '#link' ? 'link' : 'kaku'; }
+  function current() { return location.hash === '#naosu' ? 'naosu' : location.hash === '#link' ? 'link' : location.hash === '#news' ? 'news' : 'kaku'; }
   function mode() {
     var m = current();
     var admin = m !== 'kaku';
@@ -65,13 +70,14 @@
     if (admin) done.hidden = true;
     document.getElementById('mode-title').textContent = MODES[m].title;
     document.getElementById('mode-lead').textContent = MODES[m].lead;
-    ['kaku', 'naosu', 'link'].forEach(function (k) { document.getElementById('tab-' + k).toggleAttribute('aria-current', k === m); });
+    ['kaku', 'naosu', 'link', 'news'].forEach(function (k) { document.getElementById('tab-' + k).toggleAttribute('aria-current', k === m); });
     body.hidden = true;
     linkBody.hidden = true;
+    newsBody.hidden = true;
     say('');
     if (!admin) return;
     if (!pass()) { login.hidden = false; return; }
-    if (m === 'naosu') load(); else loadLinks();
+    if (m === 'naosu') load(); else if (m === 'news') loadNews(); else loadLinks();
   }
   window.addEventListener('hashchange', mode);
   document.getElementById('tab-kaku').addEventListener('click', function (ev) {
@@ -85,7 +91,7 @@
       .then(function (d) { if (!d.ok) throw new Error(d.error || 'server_error'); return d; });
   }
   function fail(err) {
-    if (err.message === 'bad_passcode') { keep(''); body.hidden = true; linkBody.hidden = true; login.hidden = false; }
+    if (err.message === 'bad_passcode') { keep(''); body.hidden = true; linkBody.hidden = true; newsBody.hidden = true; login.hidden = false; }
     say(ERRORS[err.message] || 'うまくいきませんでした。電波のよいところで、もう一度ためしてください。', true);
   }
 
@@ -108,7 +114,7 @@
     if (!v) { say('管理用の合言葉を入れてください。', true); return; }
     keep(v);
     login.passcode.value = '';
-    if (current() === 'link') loadLinks(); else load();
+    if (current() === 'link') loadLinks(); else if (current() === 'news') loadNews(); else load();
   });
 
   function draw() {
@@ -361,6 +367,63 @@
   }
   addLink(document.getElementById('insta-add'), 'admin_insta_add', 'insta');
   addLink(document.getElementById('school-add'), 'admin_school_add', 'school');
+
+  // ─── お知らせの管理（今後の予定・お知らせ） ───
+  function loadNews() {
+    if (!C.GAS_URL) { say(ERRORS.not_ready, true); return; }
+    say('予定・お知らせの一覧を読みこんでいます…');
+    api({ action: 'admin_news' }).then(function (d) {
+      news = d.items || [];
+      login.hidden = true;
+      newsBody.hidden = false;
+      say('');
+      drawNews();
+    }, fail);
+  }
+  function drawNews() {
+    document.getElementById('news-list').innerHTML = news.length ? news.map(function (x) {
+      var to = x.status === '掲載' ? '外す' : '掲載';
+      return '<li class="admin-item s-' + (x.status === '掲載' ? '公開' : '非公開') + '">' +
+        '<p class="meta"><span class="badge">' + esc(x.status) + '</span>' + esc(x.kind) + '　' + esc(jpDate(x.date)) + (x.time ? '　' + esc(x.time) : '') + (x.place ? '　' + esc(x.place) : '') + '</p>' +
+        '<h3>' + esc(x.title) + '</h3>' + (x.body ? '<p>' + esc(x.body) + '</p>' : '') +
+        '<div class="acts"><button type="button" class="button' + (to === '掲載' ? '' : ' button-ghost') + '" data-nid="' + esc(x.id) + '" data-ns="' + to + '">' + to + (to === '掲載' ? 'にする' : '') + '</button></div></li>';
+    }).join('') : '<li class="empty">まだありません。上から足してください。</li>';
+  }
+  newsBody.addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[data-nid]');
+    if (!b) return;
+    var id = b.dataset.nid, to = b.dataset.ns;
+    newsBody.querySelectorAll('.admin-item button').forEach(function (e) { e.disabled = true; });
+    say('「' + to + '」にしています…');
+    api({ action: 'admin_news_set', id: id, status: to }).then(function () {
+      news.forEach(function (x) { if (x.id === id) x.status = to; });
+      say('「' + to + '」にしました。' + (to === '掲載' ? 'サイトにもすぐ出ます。' : ''));
+      drawNews();
+    }, function (err) { drawNews(); fail(err); });
+  });
+  (function () {
+    var form = document.getElementById('news-add');
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var payload = { action: 'admin_news_add' };
+      ['kind', 'date', 'title', 'time', 'place', 'body', 'url'].forEach(function (k) { payload[k] = form[k].value.trim(); });
+      if (!payload.date) { say(ERRORS.bad_date, true); return; }
+      if (!payload.title) { say('見出しを入れてください。', true); return; }
+      form.querySelector('button').disabled = true;
+      say('足しています…');
+      api(payload).then(function () {
+        var kind = form.kind.value;
+        form.reset();
+        form.kind.value = kind;
+        form.querySelector('button').disabled = false;
+        loadNews();
+        setTimeout(function () { say('足して、サイトに載せました。'); }, 1500);
+      }, function (err) {
+        form.querySelector('button').disabled = false;
+        if (err.message === 'bad_title') say('見出しは60字までで入れてください。', true); else fail(err);
+      });
+    });
+  })();
 
   mode();
 })();
