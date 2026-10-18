@@ -58,9 +58,17 @@
   }
 
   // 写真は1枚ずつ GAS から受け取る（ドライブでは公開していない）
+  // 公開した記事の写真は、Claude が tools/kiji-photos.py で assets/kiji/ に置く。置いてあればそちらを使う（2026-10-18 社長決定: 案A）
   var photoCache = {};
+  var localPhotos = window.A4B_KIJI_PHOTOS || [];
   function loadPhoto(img) {
     var id = img.getAttribute('data-photo');
+    if (localPhotos.indexOf(id) >= 0 && !img.getAttribute('data-local-failed')) {
+      img.onload = function () { img.classList.add('loaded'); var w = img.parentNode.querySelector('.ph-wait'); if (w) w.remove(); };
+      img.onerror = function () { img.onload = img.onerror = null; img.setAttribute('data-local-failed', '1'); img.removeAttribute('src'); loadPhoto(img); };
+      img.src = 'assets/kiji/' + encodeURIComponent(id) + '.jpg';
+      return;
+    }
     if (!photoCache[id]) photoCache[id] = api({ photo: id }).then(function (d) {
       if (!d.ok) throw new Error(d.error);
       return 'data:' + d.mime + ';base64,' + d.data;
