@@ -32,6 +32,9 @@
     sel.appendChild(o);
   });
 
+  // 合言葉は、全角の英数字・記号を半角に、全角の空白を半角にして前後の空白を取ってから送る（スマホの変換で弾かれないように、2026-10-18）
+  function normPass(s) { return String(s || '').replace(/[\uFF01-\uFF5E]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/\u3000/g, ' ').trim(); }
+
   // 今日の日付を入れておく
   var now = new Date();
   form.date.value = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2);
@@ -43,8 +46,16 @@
   form.passcode.value = recall('passcode');
   form.rememberPass.checked = !!form.passcode.value;
   form.writer.value = recall('writer');
-  document.getElementById('f-pass-show').addEventListener('change', function () {
-    form.passcode.type = this.checked ? 'text' : 'password';
+  // 合言葉の「表示／隠す」（投稿と管理の両方の欄。変換を確かめられるように、2026-10-18）
+  document.querySelectorAll('.pass-eye').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var input = document.getElementById(b.getAttribute('aria-controls'));
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      b.textContent = show ? '隠す' : '表示';
+      b.setAttribute('aria-pressed', String(show));
+      input.focus();
+    });
   });
 
   // 本文の字数
@@ -109,7 +120,7 @@
 
   // ─── 送信 ───
   function check() {
-    if (!form.passcode.value.trim()) return '合言葉を入れてください。';
+    if (!normPass(form.passcode.value)) return '合言葉を入れてください。';
     if (!form.date.value) return ERRORS.bad_date;
     if (!form.activity.value) return ERRORS.bad_activity;
     if (!form.title.value.trim()) return 'タイトルを入れてください。';
@@ -125,7 +136,7 @@
     if (problem) { say(problem, true); return; }
     if (!C.GAS_URL) { say(ERRORS.not_ready, true); return; }
     var payload = {
-      passcode: form.passcode.value.trim(),
+      passcode: normPass(form.passcode.value),
       date: form.date.value,
       activity: form.activity.value,
       title: form.title.value.trim(),

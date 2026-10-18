@@ -217,6 +217,10 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .post-form label.check input { width: 22px; height: 22px; flex: none; margin-top: 2px; }
 .post-form .hint { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
 .post-form .req { font-size: 12px; font-weight: 700; color: #a1372b; margin-left: 4px; }
+.pass-wrap { display: flex; gap: 8px; }
+.pass-wrap input { flex: 1; min-width: 0; }
+.pass-eye { flex: none; min-width: 68px; min-height: 44px; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 700; color: var(--accent); background: var(--surface); border: 1px solid var(--accent); border-radius: 8px; cursor: pointer; }
+.pass-eye[aria-pressed="true"] { color: #fff; background: var(--accent); }
 .post-form .button { border: 0; font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; margin-top: 12px; width: 100%; max-width: 320px; }
 .post-form .button:disabled { background: #b8c2bf; cursor: default; }
 .post-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }

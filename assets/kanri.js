@@ -48,6 +48,8 @@
     });
   }
   function say(text, isError) { msg.textContent = text || ''; msg.classList.toggle('error', !!isError); }
+  // 合言葉は、全角の英数字・記号を半角に、全角の空白を半角にして前後の空白を取ってから送る（スマホの変換で弾かれないように、2026-10-18）
+  function normPass(s) { return String(s || '').replace(/[\uFF01-\uFF5E]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/\u3000/g, ' ').trim(); }
   function pass() { try { return sessionStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
   function keep(v) { try { if (v) sessionStorage.setItem(KEY, v); else sessionStorage.removeItem(KEY); } catch (e) { /* 覚えられない端末 */ } }
   function jpDate(d) {
@@ -111,7 +113,7 @@
 
   login.addEventListener('submit', function (ev) {
     ev.preventDefault();
-    var v = login.passcode.value.trim();
+    var v = normPass(login.passcode.value);
     if (!v) { say('管理用の合言葉を入れてください。', true); return; }
     keep(v);
     login.passcode.value = '';
