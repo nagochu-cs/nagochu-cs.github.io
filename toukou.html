@@ -6,9 +6,10 @@
 <title>記事を書く｜名護中学校コミュニティスクール</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="assets/img/koushou.png">
-<link rel="stylesheet" href="assets/style.css?v=7">
+<link rel="stylesheet" href="assets/style.css?v=8">
 <script src="assets/config.js"></script>
 <script src="assets/toukou.js" defer></script>
+<script src="assets/kanri.js?v=2" defer></script>
 </head>
 <body>
 <header class="site-header">
@@ -19,9 +20,13 @@
 <main>
 <div class="wrap">
   <div class="page-head"><span class="k" aria-hidden="true">学場</span><div>
-    <h1>記事を書く</h1>
-    <p>活動の記事を送るページです。送った記事は、確認してからサイトに載せます。すぐには公開されません。</p>
+    <h1 id="mode-title">記事を書く</h1>
+    <p id="mode-lead">活動の記事を送るページです。送った記事は、確認してからサイトに載せます。すぐには公開されません。</p>
   </div></div>
+  <nav class="mode-tabs" aria-label="ページの切りかえ">
+    <a href="toukou.html" id="tab-kaku" aria-current="page">記事を書く</a>
+    <a href="toukou.html#naosu" id="tab-naosu">記事を直す（管理）</a>
+  </nav>
   <form class="post-form" id="post-form" novalidate>
     <label for="f-pass">合言葉 <span class="req">必須</span></label>
     <input id="f-pass" name="passcode" type="text" autocomplete="off" autocapitalize="off" required>
@@ -69,6 +74,20 @@
     <p class="post-message" id="f-message" role="status" aria-live="polite"></p>
     <button class="button" type="submit" id="f-submit">送信する</button>
   </form>
+  <section class="admin" id="naosu" hidden>
+    <form class="post-form admin-login" id="admin-login" novalidate>
+      <label for="a-pass">管理用の合言葉</label>
+      <input id="a-pass" name="passcode" type="password" autocomplete="off" autocapitalize="off" required>
+      <p class="hint">記事を書くときの合言葉とは別のものです。このタブを閉じると忘れます。</p>
+      <button class="button" type="submit" id="a-open">記事の一覧を出す</button>
+    </form>
+    <p class="post-message" id="a-message" role="status" aria-live="polite"></p>
+    <div id="admin-body" hidden>
+      <div class="admin-filter" id="admin-filter" role="group" aria-label="しぼりこみ"></div>
+      <ul class="admin-list" id="admin-list"></ul>
+      <p class="note">「公開」にすると、すぐサイトに出ます（写真の準備に少し時間がかかります）。文字や写真は「文字・写真を直す」で直せます。</p>
+    </div>
+  </section>
   <div class="post-done" id="post-done" hidden>
     <h2>送信しました</h2>
     <p>ありがとうございます。内容を確認してから、サイトに載せます。</p>

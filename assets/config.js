@@ -8,8 +8,7 @@ window.A4B_CONFIG = {
   ACTIVITIES: [
     { name: '名護中まちなかクラブ', slug: 'machinaka' },
     { name: '朝ごはんPJ', slug: 'asagohan' },
-    { name: 'てんたばる講座', slug: 'tentabaru' },
-    { name: '商いの学校', slug: 'akinai' },
+    { name: 'てんたばる学校地域講座', slug: 'tentabaru' },
     { name: '放課後学習支援', slug: 'gakushu' },
     { name: '講演会・特別授業', slug: 'kouen' },
   ],
