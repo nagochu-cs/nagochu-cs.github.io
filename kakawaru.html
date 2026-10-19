@@ -20,6 +20,20 @@
 <link rel="stylesheet" href="assets/style.css?v=18">
 <script src="assets/config.js?v=2"></script>
 <script src="assets/site.js?v=10" defer></script>
+<!-- アクセス解析（GoatCounter・Google アナリティクス4）。本物のサイトでだけ動く（2026-10-19） -->
+<script>
+if (location.hostname === 'nagochu-cs.github.io') {
+  (function (d) {
+    var g = d.createElement('script'); g.async = true; g.src = 'https://gc.zgo.at/count.js';
+    g.setAttribute('data-goatcounter', 'https://nagochu-cs.goatcounter.com/count'); d.head.appendChild(g);
+    var t = d.createElement('script'); t.async = true; t.src = 'https://www.googletagmanager.com/gtag/js?id=G-Q91L0SXB8F'; d.head.appendChild(t);
+  })(document);
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-Q91L0SXB8F');
+}
+</script>
 </head>
 <body>
 <header class="site-header">
@@ -56,6 +70,7 @@
         <p class="foot-name">名護市立名護中学校コミュニティスクール（学校運営協議会）</p>
         <p>お問い合わせ・関わりたい方は、<a href="kakawaru.html">「関心のある方」のフォーム</a>からご連絡ください。</p>
         <p>写真について: 生徒の顔がわかる写真は載せない方針です。</p>
+        <p>アクセス解析について: 見られた数を知るために GoatCounter と Google アナリティクスを使っています。Google アナリティクスは Cookie を使います（個人を特定する情報は集めていません）。</p>
       </div>
       <div>
         <p class="foot-h">関係者リンク</p>
