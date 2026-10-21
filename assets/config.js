@@ -12,6 +12,15 @@ window.A4B_CONFIG = {
     { name: '放課後学習支援', slug: 'gakushu' },
     { name: '講演会・特別授業', slug: 'kouen' },
   ],
+  // 合言葉なしで足すリンク（2026-10-22）。シート（リンクの管理）の分と一緒に並ぶ。同じ URL がシートにあればシートの方を使う
+  EXTRA_LINKS: {
+    school: [
+      { date: '2026-10-21', url: 'http://sw.city.nago.okinawa.jp/nago-c/archives/4918', title: '朝ごはんPJ（10月21日）' },
+    ],
+    insta: [
+      { date: '2026-10-21', url: 'https://www.instagram.com/p/DevmW88E7Lj/', title: '10月21日の朝ごはんPJ（ジャーマンポテト・ピーマンとツナの和え物・味噌汁）' },
+    ],
+  },
   // お知らせの画像（2026-10-18）。キーはシート「お知らせ」の ID。1枚目が一覧の小さな画像になる。画像は assets/news/ に置く
   NEWS_IMAGES: {
     n2026101815000011: [

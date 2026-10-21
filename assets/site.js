@@ -200,8 +200,22 @@
     var boxes = document.querySelectorAll('[' + attr + ']');
     if (!boxes.length) return;
     var q = {}; q[param] = 1;
+    // config.js の EXTRA_LINKS（合言葉なしで足したリンク）もシートの分と混ぜ、同じ URL は1つにして新しい順に（2026-10-22）
+    var extra = ((C.EXTRA_LINKS || {})[param] || []).slice();
+    function merge(items) {
+      var seen = {};
+      return items.concat(extra).filter(function (x) {
+        var k = String(x.url || '').replace(/^https?:\/\//, '').replace(/[?#].*$/, '').replace(/\/$/, '');
+        if (seen[k]) return false; seen[k] = 1; return true;
+      }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+    }
     api(q).then(function (d) {
       if (!d.ok) throw new Error(d.error);
+      return { ok: true, items: merge(d.items || []) };
+    }, function (err) {
+      if (extra.length) return { ok: true, items: merge([]) };
+      throw err;
+    }).then(function (d) {
       boxes.forEach(function (el) {
         var n = el.getAttribute(attr);
         var fold = /\+$/.test(n) ? parseInt(n, 10) : 0;
