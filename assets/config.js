@@ -6,11 +6,13 @@ window.A4B_CONFIG = {
   CONTACT_FORM_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSfIyViAQpYERQJ2-QOD-em1rZ9VCyybC0HdjidzZfuICr2_Gw/viewform',
   // 活動名（GAS の ACTIVITIES と同じ並び）。slug はページ内の目印
   ACTIVITIES: [
+    { name: 'てんたばる語れー会', slug: 'katare' },   // 2026-10-26 足した
     { name: '名護中まちなかクラブ', slug: 'machinaka' },
     { name: '朝ごはんPJ', slug: 'asagohan' },
     { name: 'てんたばる学校地域講座', slug: 'tentabaru' },
     { name: '放課後学習支援', slug: 'gakushu' },
     { name: '講演会・特別授業', slug: 'kouen' },
+    { name: 'その他', slug: 'sonota' },               // 2026-10-26 足した。どれにも当たらない記事
   ],
   // 合言葉なしで足すリンク（2026-10-22）。シート（リンクの管理）の分と一緒に並ぶ。同じ URL がシートにあればシートの方を使う
   EXTRA_LINKS: {

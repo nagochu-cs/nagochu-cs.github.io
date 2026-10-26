@@ -131,6 +131,7 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .tag-akinai { background: #fbe8e6; color: #a1372b; }
 .tag-gakushu { background: #efe9f8; color: #5b3f91; }
 .tag-kouen { background: #ececec; color: #444; }
+.tag-katare { background: #e6f4ea; color: #1e6b3a; }
 .empty { color: var(--muted); }
 
 /* 絞り込み */
