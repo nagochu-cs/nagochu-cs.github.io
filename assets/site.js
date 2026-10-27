@@ -313,7 +313,8 @@
       '<button type="button" class="news-close" aria-label="閉じる">×</button>' +
       '<div class="news-dialog-head">' + newsDate(x) + '<div><span class="news-kind">' + esc(x.kind) + '</span><h2 id="news-dialog-title">' + esc(x.title) + '</h2>' +
       (meta ? '<p class="news-meta">' + meta + '</p>' : '') + '</div></div>' +
-      (x.body ? '<p class="news-body">' + para(x.body) + '</p>' : '') + link + HELP +
+      (x.body ? '<p class="news-body">' + para(x.body) + '</p>' : '') + link +
+      (((window.A4B_CONFIG || {}).NEWS_NO_HELP || []).indexOf(x.id) >= 0 ? '' : HELP) +
       imgs.map(function (im) {
         return '<figure><a href="' + esc(im.src) + '" target="_blank" rel="noopener"><img src="' + esc(im.src) + '" alt="' + esc(im.alt || '') + '" loading="lazy"></a>' +
           (im.alt ? '<figcaption>' + esc(im.alt) + '（押すと原寸で開きます）</figcaption>' : '') + '</figure>';
