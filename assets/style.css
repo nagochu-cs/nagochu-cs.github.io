@@ -78,7 +78,9 @@ img { max-width: 100%; display: block; }
 .b-pillars { display: grid; gap: 14px; grid-template-columns: 1fr; }
 @media (min-width: 761px) { .b-pillars { grid-template-columns: repeat(3, 1fr); } }
 .b-pillar { background: var(--surface); border: 1px solid var(--line); padding: 20px; position: relative; }
-.b-pillar .big { position: absolute; right: 12px; top: 6px; font-size: 64px; line-height: 1; color: rgba(184,50,42,.12); font-weight: 700; }
+.b-motto { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin: 0 0 16px; }
+.b-motto b { font-size: 34px; letter-spacing: .12em; color: var(--shu); line-height: 1.2; }
+.b-motto span { font-size: 14px; color: var(--muted); }
 .b-pillar h3 { margin: 0 0 4px; font-size: 19px; }
 .b-pillar .sub { font-size: 13px; color: var(--shu); margin: 0 0 10px; }
 .b-pillar p { margin: 0; font-size: 14px; color: var(--muted); }
@@ -92,9 +94,9 @@ img { max-width: 100%; display: block; }
 .gallery .ph { aspect-ratio: 4 / 3; border-radius: 2px; }
 @media (min-width: 761px) { .gallery { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
 
-/* ページの見出し（左に縦書きの2文字） */
+/* ページの見出し（左に縦書きの校訓「学場真素」4文字） */
 .page-head { padding: 36px 0 16px; border-bottom: 1px solid var(--line); margin-bottom: 8px; display: flex; gap: 16px; align-items: flex-start; }
-.page-head .k { writing-mode: vertical-rl; font-size: 34px; font-weight: 700; color: var(--shu); line-height: 1; flex: none; }
+.page-head .k { writing-mode: vertical-rl; font-size: 22px; letter-spacing: .08em; font-weight: 700; color: var(--shu); line-height: 1; flex: none; }
 .page-head h1 { font-size: clamp(24px, 5vw, 32px); margin: 0 0 6px; line-height: 1.4; }
 .page-head p { color: var(--muted); margin: 0; }
 
