@@ -181,6 +181,7 @@
       var src = p.data || thumbs[p.keep] || '';
       return '<li><figure>' + (src ? '<img src="' + src + '" alt="' + (i + 1) + '枚目">' : '<span class="loading">読みこみ中…</span>') +
         '<figcaption>' + (i + 1) + '枚目' + (p.data ? '（新しい写真）' : '') + '</figcaption></figure>' +
+        '<button type="button" class="button button-ghost" data-ph-mark="' + (i + 1) + '">本文に入れる</button>' +
         '<button type="button" class="button button-ghost" data-ph-remove="' + i + '">外す</button>' +
         '<label class="button button-ghost">入れ替える<input type="file" accept="image/*" data-ph-replace="' + i + '" hidden></label></li>';
     }).join('');
@@ -192,6 +193,7 @@
       '<p class="hint">生徒の名前は書かないでください。</p>' +
       '<label>写真の説明</label><textarea name="captions" rows="3">' + esc(x.captions) + '</textarea>' +
       '<p class="hint">1行に1枚ずつ、写真の順に。</p>' +
+      '<p class="hint">「本文に入れる」を押すと、本文のカーソルの位置に【写真1】のような印が入り、記事ではそこに写真が出ます。印のない写真は最後に出ます。写真を外したり足したりすると番号が変わるので、印も見直してください。</p>' +
       '<p class="label-like">写真（4枚まで）</p>' +
       '<ul class="admin-photos">' + ph + '</ul>' +
       (edit.photos.length < MAX_PHOTOS ? '<label class="button button-ghost add-photo">写真を足す<input type="file" accept="image/*" multiple data-ph-add="1" hidden></label>' : '') +
@@ -315,6 +317,8 @@
     if (e) { openEditor(e.dataset.edit); return; }
     var rm = ev.target.closest('button[data-ph-remove]');
     if (rm && edit) { edit.photos.splice(Number(rm.dataset.phRemove), 1); edit.changed = true; redrawEditor(); return; }
+    var mk = ev.target.closest('button[data-ph-mark]');
+    if (mk && window.CS_insertPhotoMark) { window.CS_insertPhotoMark(mk.closest('form').body, Number(mk.dataset.phMark)); return; }
     if (ev.target.closest('button[data-cancel]')) { confirming = null; draw(); return; }
     var b = ev.target.closest('button[data-id]');
     if (!b) return;

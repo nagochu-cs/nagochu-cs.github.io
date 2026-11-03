@@ -70,6 +70,17 @@
   }
 
   // ─── 写真 ───
+  // 本文のカーソルの位置に「【写真1】」の行を入れる。記事ではその場所に写真が出る（2026-11-03）
+  function insertMark(ta, n) {
+    var v = ta.value, at = ta.selectionStart == null ? v.length : ta.selectionStart;
+    var before = v.slice(0, at), after = v.slice(at);
+    var mark = (before && !/\n$/.test(before) ? '\n' : '') + '【写真' + n + '】' + (/^\n/.test(after) ? '' : '\n');
+    ta.value = before + mark + after;
+    var pos = before.length + mark.length;
+    ta.focus();
+    ta.setSelectionRange(pos, pos);
+  }
+  window.CS_insertPhotoMark = insertMark;
   function loadImage(file) {
     return new Promise(function (resolve, reject) {
       var url = URL.createObjectURL(file);
@@ -106,10 +117,20 @@
         return loadImage(file).then(function (img) {
           var data = toJpeg(img);
           photos.push(data);
+          var n = photos.length;
+          var box = document.createElement('div');
+          box.className = 'post-preview';
           var im = document.createElement('img');
           im.src = data;
-          im.alt = (photos.length) + '枚目';
-          previews.appendChild(im);
+          im.alt = n + '枚目';
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'button button-ghost';
+          b.textContent = n + '枚目を本文に入れる';
+          b.addEventListener('click', function () { insertMark(form.body, n); showCount(); });
+          box.appendChild(im);
+          box.appendChild(b);
+          previews.appendChild(box);
         }, function () { failed++; });
       });
     }, Promise.resolve()).then(function () {

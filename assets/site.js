@@ -51,7 +51,31 @@
     var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || '');
     return m ? m[1] + '年' + Number(m[2]) + '月' + Number(m[3]) + '日' : '';
   }
-  function excerpt(s, n) { s = String(s || '').replace(/\s+/g, ' '); return s.length > n ? s.slice(0, n) + '…' : s; }
+  // 本文の中の「【写真1】」だけの行は、その場所に写真を出す印（2026-11-03）。［写真1］・[写真1]・全角数字も通す
+  var PHOTO_MARK = /^\s*[【\[［]\s*写真\s*([1-4１-４])\s*[】\]］]\s*$/;
+  function markNo(line) { var m = PHOTO_MARK.exec(line); return m ? '1234１２３４'.indexOf(m[1]) % 4 + 1 : 0; }
+  function stripMarks(s) { return String(s || '').split(/\r?\n/).filter(function (l) { return !markNo(l); }).join('\n'); }
+  function figureOf(p) {
+    return '<figure><div class="ph-box"><img data-photo="' + esc(p.id) + '" alt="' + esc(p.caption || '') + '">' + WAIT + '</div>' + (p.caption ? '<figcaption>' + esc(p.caption) + '</figcaption>' : '') + '</figure>';
+  }
+  // 本文と写真を並べる。印のある写真はその場所に、印のない写真はこれまでどおり最後に出す
+  function articleBody(body, photos) {
+    var used = {}, out = '', lines = [];
+    function flush() {
+      var t = lines.join('\n').replace(/^\n+|\n+$/g, '');
+      if (t) out += '<div class="article-body"><p>' + para(t) + '</p></div>';
+      lines = [];
+    }
+    String(body || '').split(/\r?\n/).forEach(function (l) {
+      var n = markNo(l);
+      if (!n) { lines.push(l); return; }
+      flush();
+      if (photos[n - 1] && !used[n]) { used[n] = true; out += figureOf(photos[n - 1]); }
+    });
+    flush();
+    return out + photos.filter(function (p, i) { return !used[i + 1]; }).map(figureOf).join('');
+  }
+  function excerpt(s, n) { s = stripMarks(s).replace(/\s+/g, ' '); return s.length > n ? s.slice(0, n) + '…' : s; }
   function slugOf(name) {
     var a = (C.ACTIVITIES || []).filter(function (x) { return x.name === name; })[0];
     return a ? a.slug : '';
@@ -185,10 +209,7 @@
       box.innerHTML =
         '<p class="meta"><a class="tag tag-' + slugOf(a.activity) + '" href="katsudo.html?a=' + encodeURIComponent(a.activity) + '">' + esc(a.activity) + '</a><time>' + jpDate(a.date) + '</time></p>' +
         '<h1>' + esc(a.title) + '</h1>' +
-        '<div class="article-body"><p>' + para(a.body) + '</p></div>' +
-        (a.photos || []).map(function (p) {
-          return '<figure><div class="ph-box"><img data-photo="' + esc(p.id) + '" alt="' + esc(p.caption || '') + '">' + WAIT + '</div>' + (p.caption ? '<figcaption>' + esc(p.caption) + '</figcaption>' : '') + '</figure>';
-        }).join('');
+        articleBody(a.body, a.photos || []);
       watchPhotos(box);
     }, function (err) { showError(box, err); });
   }

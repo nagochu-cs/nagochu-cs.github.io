@@ -228,6 +228,9 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .post-form .button:disabled { background: #b8c2bf; cursor: default; }
 .post-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .post-previews img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+.post-preview { display: flex; flex-direction: column; gap: 6px; width: 120px; }
+.post-preview img { width: 120px; height: 96px; }
+.post-preview .button { font-size: 13px; padding: 6px 8px; margin: 0; width: auto; max-width: none; }
 .post-message { min-height: 1.5em; margin: 20px 0 0; font-weight: 700; color: var(--accent); }
 .post-message.error { color: #a1372b; }
 .post-trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
