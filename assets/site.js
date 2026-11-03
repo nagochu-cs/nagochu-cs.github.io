@@ -88,9 +88,15 @@
   function loadPhoto(img) {
     var id = img.getAttribute('data-photo');
     if (localPhotos.indexOf(id) >= 0 && !img.getAttribute('data-local-failed')) {
+      // スマホの幅と記事一覧のカードでは幅640px の小さい版（-s.jpg）を使う。なければ今の版、それもなければ GAS（2026-11-03）
+      var small = !img.getAttribute('data-small-failed') && (window.innerWidth <= 760 || img.closest('.card-photo'));
       img.onload = function () { img.classList.add('loaded'); var w = img.parentNode.querySelector('.ph-wait'); if (w) w.remove(); };
-      img.onerror = function () { img.onload = img.onerror = null; img.setAttribute('data-local-failed', '1'); img.removeAttribute('src'); loadPhoto(img); };
-      img.src = 'assets/kiji/' + encodeURIComponent(id) + '.jpg';
+      img.onerror = function () {
+        img.onload = img.onerror = null;
+        img.setAttribute(small ? 'data-small-failed' : 'data-local-failed', '1');
+        img.removeAttribute('src'); loadPhoto(img);
+      };
+      img.src = 'assets/kiji/' + encodeURIComponent(id) + (small ? '-s' : '') + '.jpg';
       return;
     }
     if (!photoCache[id]) photoCache[id] = api({ photo: id }).then(function (d) {
