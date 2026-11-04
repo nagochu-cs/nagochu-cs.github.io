@@ -1,0 +1,41 @@
+# 公開した記事の写真を、1時間ごとに自動で軽くして assets/kiji/ に足す（2026-11-04 社長決定: 案A）
+#
+# 社長が管理画面で記事を「公開」にすると、写真は GAS から1枚約3秒かけて出る。
+# これが動くと、遅くても1時間ほどで軽い写真（幅1000px と スマホ用 640px）に切りかわる。
+# 足すのは公開中の記事の写真だけ。自動では消さない（消すのは社長のOKのあと、手元で --prune）。
+#
+# 正本は ai-workspace の 名護中CS/サイト試作/pages-github/。pages-publish.sh が .github/ に写す。
+name: 記事の写真を置く
+
+on:
+  schedule:
+    - cron: '17 * * * *'   # 毎時17分（UTC。日本時間でも毎時17分）
+  workflow_dispatch:        # Actions の画面から手で動かすこともできる
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kiji-photos
+  cancel-in-progress: false
+
+jobs:
+  photos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet pillow
+      - name: 新しい写真を置く
+        run: python .github/scripts/kiji-photos.py --site=.
+      - name: 変わっていれば commit して push
+        run: |
+          git add assets/kiji
+          if git diff --cached --quiet; then echo "新しい写真はありません"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898499+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "写真: 公開した記事の写真を自動で置く"
+          git push
