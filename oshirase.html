@@ -17,9 +17,9 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="assets/style.css?v=21">
+<link rel="stylesheet" href="assets/style.css?v=22">
 <script src="assets/config.js?v=8"></script>
-<script src="assets/site.js?v=14" defer></script>
+<script src="assets/site.js?v=15" defer></script>
 <!-- アクセス解析（GoatCounter・Google アナリティクス4）。本物のサイトでだけ動く（2026-10-19） -->
 <script>
 if (location.hostname === 'nagochu-cs.github.io') {
@@ -64,14 +64,13 @@ if (location.hostname === 'nagochu-cs.github.io') {
   </section>
   <section id="oshirase">
     <h2>お知らせ</h2>
-    <ul class="news-list" data-news="news" data-empty="お知らせは、まだありません。"></ul>
+    <ul class="news-list" data-news="news:3" data-empty="お知らせは、まだありません。"></ul>
   </section>
-  <section data-news-section>
-    <details class="news-past">
-      <summary>終わった予定</summary>
-      <ul class="news-list" data-news="past:20"></ul>
-    </details>
+  <section id="owatta" data-news-section>
+    <h2>終わった予定</h2>
+    <ul class="news-list" data-news="past:3"></ul>
   </section>
+  <p class="news-archive-link"><a href="oshirase-kako.html">これより前の予定・お知らせ（一覧）</a></p>
 </div>
 </main>
 <footer class="site-footer">

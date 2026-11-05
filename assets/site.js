@@ -312,6 +312,14 @@
       (meta ? '<p class="news-meta">' + meta + '</p>' : '') + '<span class="news-more">くわしく見る</span></div>' +
       (img ? '<img class="news-thumb" src="' + esc(img.src) + '" alt="" loading="lazy">' : '') + '</a></li>';
   }
+  // これまでの一覧の1行（日付・種類・見出しだけ。押すと oshirase.html の詳細が開く。2026-11-05）
+  function newsRow(x) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(x.date) || [];
+    var w = m.length ? '日月火水木金土'.charAt(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getDay()) : '';
+    return '<li class="news-item news-row k-' + (x.kind === '予定' ? 'yotei' : 'oshirase') + '">' +
+      '<a href="oshirase.html#' + encodeURIComponent(x.id) + '"><span class="r-date">' + (m.length ? m[1] + '年' + Number(m[2]) + '月' + Number(m[3]) + '日（' + w + '）' : esc(x.date)) + '</span>' +
+      '<span class="news-kind">' + esc(x.kind) + '</span><span class="r-title">' + esc(x.title) + '</span></a></li>';
+  }
   function newsDialog() {
     var dlg = document.querySelector('.news-dialog');
     if (dlg) return dlg;
@@ -379,14 +387,25 @@
       boxes.forEach(function (el) {
         var spec = el.getAttribute('data-news').split(':');
         var n = Number(spec[1]) || 0;
-        var items = d.items.filter(function (x) {
-          if (spec[0] === 'news') return x.kind === 'お知らせ';
-          if (x.kind !== '予定') return false;
-          return spec[0] === 'past' ? x.date < t : x.date >= t;
-        });
-        if (spec[0] === 'upcoming') items = items.slice().reverse(); // 近い順
-        if (n) items = items.slice(0, n);
-        if (items.length) { el.innerHTML = items.map(newsItem).join(''); return; }
+        var pick = function (k) {
+          return d.items.filter(function (x) {
+            if (k === 'news') return x.kind === 'お知らせ';
+            if (x.kind !== '予定') return false;
+            return k === 'past' ? x.date < t : x.date >= t;
+          });
+        };
+        var items;
+        if (spec[0] === 'archive') {
+          // これまでの一覧（2026-11-05）: お知らせのページに出す新しい3件より前の、終わった予定とお知らせ。新しい順
+          var keep = n || 3;
+          items = pick('past').slice(keep).concat(pick('news').slice(keep));
+          items.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+        } else {
+          items = pick(spec[0]);
+          if (spec[0] === 'upcoming') items = items.slice().reverse(); // 近い順
+          if (n) items = items.slice(0, n);
+        }
+        if (items.length) { el.innerHTML = items.map(spec[0] === 'archive' ? newsRow : newsItem).join(''); return; }
         var empty = el.getAttribute('data-empty');
         if (empty) { el.innerHTML = '<li class="empty">' + esc(empty) + '</li>'; return; }
         var col = el.closest('.news-col');
