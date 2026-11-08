@@ -5,6 +5,7 @@
 # 足すのは公開中の記事の写真だけ。自動では消さない（消すのは社長のOKのあと、手元で --prune）。
 #
 # 正本は ai-workspace の 名護中CS/サイト試作/pages-github/。pages-publish.sh が .github/ に写す。
+# 2026-11-08: 11/4 の push で GitHub に登録されなかったため、この1行を足して push し直した。
 name: 記事の写真を置く
 
 on:
