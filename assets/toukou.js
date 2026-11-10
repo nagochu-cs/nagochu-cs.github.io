@@ -24,9 +24,12 @@
     too_many_photos: '写真は4枚までです。',
   };
 
-  // 活動名の選択肢
+  // 活動名の選択肢。学校のようすのページ（gakkou-toukou.html。body に data-school）では、学校のようすの項目（2026-11-10）
+  var SCHOOL = document.body.hasAttribute('data-school');
+  var KEY = SCHOOL ? 'school_' : ''; // 覚えておく合言葉・名前は、CS の投稿ページの分と分ける
+  if (SCHOOL) { ERRORS.bad_passcode = '合言葉がちがいます（教頭先生用の合言葉を入れてください）。'; ERRORS.bad_activity = '項目を選んでください。'; ERRORS.bad_date = '日付を入れてください。'; }
   var sel = form.activity;
-  (C.ACTIVITIES || []).forEach(function (a) {
+  (SCHOOL ? C.SCHOOL_TOPICS || [] : C.ACTIVITIES || []).forEach(function (a) {
     var o = document.createElement('option');
     o.textContent = a.name;
     sel.appendChild(o);
@@ -40,12 +43,13 @@
   form.date.value = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2);
 
   // 名前は、この端末に覚えておく（次からは入力しなくてよい）。合言葉は「この端末で覚える」を選んだときだけ（2026-10-18）
-  function remember(k, v) { try { if (v) localStorage.setItem('a4b_' + k, v); } catch (e) { /* 使えない端末では覚えない */ } }
-  function forget(k) { try { localStorage.removeItem('a4b_' + k); } catch (e) { /* 使えない端末では何もしない */ } }
-  function recall(k) { try { return localStorage.getItem('a4b_' + k) || ''; } catch (e) { return ''; } }
+  function remember(k, v) { try { if (v) localStorage.setItem('a4b_' + KEY + k, v); } catch (e) { /* 使えない端末では覚えない */ } }
+  function forget(k) { try { localStorage.removeItem('a4b_' + KEY + k); } catch (e) { /* 使えない端末では何もしない */ } }
+  function recall(k) { try { return localStorage.getItem('a4b_' + KEY + k) || ''; } catch (e) { return ''; } }
   form.passcode.value = recall('passcode');
   form.rememberPass.checked = !!form.passcode.value;
-  form.writer.value = recall('writer');
+  // 学校のようすのページには「書いた人」の欄がない（2026-11-10 社長の指示）。シートには「教頭先生」と入れる
+  if (form.writer) form.writer.value = recall('writer');
   // 合言葉の「表示／隠す」（投稿と管理の両方の欄。変換を確かめられるように、2026-10-18）
   document.querySelectorAll('.pass-eye').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -147,7 +151,7 @@
     if (!form.title.value.trim()) return 'タイトルを入れてください。';
     if (!form.body.value.trim()) return ERRORS.bad_body;
     if (!form.checkFace.checked || !form.checkName.checked) return ERRORS.bad_checks;
-    if (!form.writer.value.trim()) return ERRORS.bad_writer;
+    if (form.writer && !form.writer.value.trim()) return ERRORS.bad_writer;
     return '';
   }
 
@@ -165,7 +169,7 @@
       captions: form.captions.value.trim(),
       checkFace: form.checkFace.checked,
       checkName: form.checkName.checked,
-      writer: form.writer.value.trim(),
+      writer: form.writer ? form.writer.value.trim() : '教頭先生',
       website: form.website.value,
       photos: photos.map(function (d) { return d.replace(/^data:image\/jpeg;base64,/, ''); }),
     };
@@ -177,7 +181,7 @@
       .then(function (d) {
         if (!d.ok) throw new Error(d.error || 'server_error');
         if (form.rememberPass.checked) remember('passcode', payload.passcode); else forget('passcode');
-        remember('writer', payload.writer);
+        if (form.writer) remember('writer', payload.writer);
         form.hidden = true;
         document.getElementById('post-done').hidden = false;
         window.scrollTo(0, 0);

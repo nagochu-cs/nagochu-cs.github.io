@@ -2,7 +2,10 @@
 // 管理用の合言葉（投稿の合言葉とは別）で GAS の doPost（action: admin_list / admin_set）を呼ぶ。合言葉は sessionStorage にだけ置く
 (function () {
   var C = window.A4B_CONFIG || {};
-  var KEY = 'a4b_admin';
+  // 学校のようすのページ（gakkou-toukou.html。body に data-school）では、教頭先生用の合言葉で「学校のようす」の記事だけを直す（2026-11-10）
+  var SCHOOL = document.body.hasAttribute('data-school');
+  var PAGE = SCHOOL ? 'gakkou-toukou.html' : 'toukou.html';
+  var KEY = SCHOOL ? 'a4b_school_admin' : 'a4b_admin';
   var ERRORS = {
     bad_passcode: '管理用の合言葉がちがいます。',
     too_many: '合言葉のまちがいが多いため、しばらく受け付けていません。1時間ほどあけてください。',
@@ -30,7 +33,7 @@
   var editing = null;  // 直している記事の ID
   var confirming = null; // 「公開にする」の前に中身を見せている記事の ID（千葉さんの点検、2026-10-18）
   var edit = null;     // 直している中身 { photos: [{ keep: ID } | { data: JPEG の data URL }], changed: 写真を変えたか }
-  var STATUSES = ['未確認', '公開', '非公開'];
+  var STATUSES = SCHOOL ? ['公開', '非公開'] : ['未確認', '公開', '非公開'];
   var section = document.getElementById('naosu');
   var postForm = document.getElementById('post-form');
   var done = document.getElementById('post-done');
@@ -64,7 +67,15 @@
     news: { title: 'お知らせの管理', lead: '今後の予定とお知らせを、サイトに載せる・外すページです（管理用）。' },
     link: { title: 'リンクの管理', lead: '学生ボランティアの Instagram と、学校のホームページの記事を、サイトに載せる・外すページです（管理用）。' },
   };
-  function current() { return location.hash === '#naosu' ? 'naosu' : location.hash === '#link' ? 'link' : location.hash === '#news' ? 'news' : 'kaku'; }
+  if (SCHOOL) {
+    MODES.kaku = { title: '学校のようすを書く', lead: '日々の学校の様子を載せるページです。「送信する」を押すと、すぐサイトに出ます。' };
+    MODES.naosu = { title: '直す・取り下げる', lead: '載せた記事の文字・写真を直したり、取り下げたり（非公開）するページです。' };
+    ERRORS.bad_passcode = '合言葉がちがいます（教頭先生用の合言葉を入れてください）。';
+    ERRORS.not_ready = '教頭先生用の合言葉がまだ使えません。CS の担当に知らせてください。';
+    ERRORS.bad_activity = '項目を選んでください。';
+  }
+  function current() {
+    if (SCHOOL) return location.hash === '#naosu' ? 'naosu' : 'kaku'; return location.hash === '#naosu' ? 'naosu' : location.hash === '#link' ? 'link' : location.hash === '#news' ? 'news' : 'kaku'; }
   function mode() {
     var m = current();
     var admin = m !== 'kaku';
@@ -84,7 +95,7 @@
   }
   window.addEventListener('hashchange', mode);
   document.getElementById('tab-kaku').addEventListener('click', function (ev) {
-    if (current() !== 'kaku') { ev.preventDefault(); history.pushState(null, '', 'toukou.html'); mode(); }
+    if (current() !== 'kaku') { ev.preventDefault(); history.pushState(null, '', PAGE); mode(); }
   });
 
   function api(payload) {
@@ -114,7 +125,7 @@
   login.addEventListener('submit', function (ev) {
     ev.preventDefault();
     var v = normPass(login.passcode.value);
-    if (!v) { say('管理用の合言葉を入れてください。', true); return; }
+    if (!v) { say((SCHOOL ? '' : '管理用の') + '合言葉を入れてください。', true); return; }
     keep(v);
     login.passcode.value = '';
     if (current() === 'link') loadLinks(); else if (current() === 'news') loadNews(); else load();
@@ -155,7 +166,7 @@
       '<p class="label-like">この内容で公開しますか？</p>' +
       (ph ? '<ul class="admin-photos">' + ph + '</ul>' : '<p class="sub">写真はありません。</p>') +
       '<p class="body">' + esc(x.body).replace(/\r?\n/g, '<br>') + '</p>' +
-      '<p class="hint">顔が映っていないか（または同意があるか）、生徒の名前や名札が出ていないかを見てください。</p>' +
+      '<p class="hint">' + (SCHOOL ? '学校として載せてよい内容かを見てください。' : '顔が映っていないか（または同意があるか）、生徒の名前や名札が出ていないかを見てください。') + '</p>' +
       '<div class="acts"><button type="button" class="button" data-id="' + esc(x.id) + '" data-s="公開" data-ok="1">この内容で公開</button>' +
       '<button type="button" class="button button-ghost" data-cancel="1">やめる</button></div></div>';
   }
@@ -174,7 +185,8 @@
 
   // ─── 文字と写真を直す ───
   function editor(x) {
-    var acts = (C.ACTIVITIES || []).map(function (a) { return a.name; });
+    // 管理用では CS の活動名と学校のようすの項目のどちらも選べる。教頭先生用では学校のようすの項目だけ
+    var acts = (SCHOOL ? [] : C.ACTIVITIES || []).concat(C.SCHOOL_TOPICS || []).map(function (a) { return a.name; });
     if (x.activity && acts.indexOf(x.activity) === -1) acts.push(x.activity);
     var opts = acts.map(function (a) { return '<option' + (a === x.activity ? ' selected' : '') + '>' + esc(a) + '</option>'; }).join('');
     var ph = edit.photos.map(function (p, i) {
@@ -190,14 +202,14 @@
       '<label>活動名</label><select name="activity">' + opts + '</select>' +
       '<label>タイトル</label><input name="title" type="text" maxlength="40" value="' + esc(x.title) + '">' +
       '<label>本文</label><textarea name="body" rows="10" maxlength="2000">' + esc(x.body) + '</textarea>' +
-      '<p class="hint">生徒の名前は書かないでください。</p>' +
+      (SCHOOL ? '' : '<p class="hint">生徒の名前は書かないでください。</p>') +
       '<label>写真の説明</label><textarea name="captions" rows="3">' + esc(x.captions) + '</textarea>' +
       '<p class="hint">1行に1枚ずつ、写真の順に。</p>' +
       '<p class="hint">「本文に入れる」を押すと、本文のカーソルの位置に【写真1】のような印が入り、記事ではそこに写真が出ます。印のない写真は最後に出ます。写真を外したり足したりすると番号が変わるので、印も見直してください。</p>' +
       '<p class="label-like">写真（4枚まで）</p>' +
       '<ul class="admin-photos">' + ph + '</ul>' +
       (edit.photos.length < MAX_PHOTOS ? '<label class="button button-ghost add-photo">写真を足す<input type="file" accept="image/*" multiple data-ph-add="1" hidden></label>' : '') +
-      '<p class="hint">なるべく顔が映っていないもの（後ろ姿・手元・遠くから）。位置情報は自動で消します。</p>' +
+      '<p class="hint">' + (SCHOOL ? '学校として載せてよい写真を選んでください。' : 'なるべく顔が映っていないもの（後ろ姿・手元・遠くから）。') + '位置情報は自動で消します。</p>' +
       '<div class="acts"><button type="submit" class="button">保存する</button><button type="button" class="button button-ghost" data-edit="' + esc(x.id) + '">やめる</button></div>' +
       '</form>';
   }

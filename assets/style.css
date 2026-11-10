@@ -134,6 +134,15 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .tag-gakushu { background: #efe9f8; color: #5b3f91; }
 .tag-kouen { background: #ececec; color: #444; }
 .tag-katare { background: #e6f4ea; color: #1e6b3a; }
+/* 学校のようすの項目（2026-11-10） */
+.tag-g-jugyo { background: #e8eefb; color: #2f4f9a; }
+.tag-g-gyoji { background: #fbe8e6; color: #a1372b; }
+.tag-g-bukatsu { background: #e6f4ea; color: #1e6b3a; }
+.tag-g-seito { background: #efe9f8; color: #5b3f91; }
+.tag-g-kyushoku { background: #fdf0d8; color: #9a5a00; }
+.tag-g-kounai { background: #ececec; color: #444; }
+.article-note { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted, #666); }
+.gakkou-note { margin: 0 0 16px; }
 .empty { color: var(--muted); }
 
 /* 絞り込み */

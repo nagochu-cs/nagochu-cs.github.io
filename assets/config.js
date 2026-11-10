@@ -14,6 +14,16 @@ window.A4B_CONFIG = {
     { name: '講演会・特別授業', slug: 'kouen' },
     { name: 'その他', slug: 'sonota' },               // 2026-10-26 足した。どれにも当たらない記事
   ],
+  // 「学校のようす」の項目（GAS の SCHOOL_TOPICS と同じ並び。2026-11-10）。学校のホームページが閉じている間、教頭先生が日々の様子を載せる。
+  // CS の活動の記事とは別のページ（gakkou.html）に出る。投稿は gakkou-toukou.html（教頭先生用の合言葉）
+  SCHOOL_TOPICS: [
+    { name: '授業', slug: 'g-jugyo' },
+    { name: '学校行事', slug: 'g-gyoji' },
+    { name: '部活動・生徒の活躍', slug: 'g-bukatsu' },
+    { name: '生徒会・学級', slug: 'g-seito' },
+    { name: '給食・保健', slug: 'g-kyushoku' },
+    { name: '職員室・校内のようす', slug: 'g-kounai' },
+  ],
   // 合言葉なしで足すリンク（2026-10-22）。シート（リンクの管理）の分と一緒に並ぶ。同じ URL がシートにあればシートの方を使う
   EXTRA_LINKS: {
     school: [

@@ -31,13 +31,25 @@
     });
   }
 
+  // GAS の一覧には、CS の活動の記事と「学校のようす」（教頭先生の投稿。2026-11-10）の両方が入っている。活動名（項目）で分ける
+  var SCHOOL = C.SCHOOL_TOPICS || [];
+  function isSchool(a) { return SCHOOL.some(function (x) { return x.name === a.activity; }); }
   var listPromise = null;
-  function getArticles() {
+  function getAll() {
     if (!listPromise) listPromise = api({}).then(function (d) {
       if (!d.ok) throw new Error(d.error);
       return d.articles;
     });
     return listPromise;
+  }
+  function getArticles() { return getAll().then(function (list) { return list.filter(function (a) { return !isSchool(a); }); }); }
+  // 学校のようす: GAS の新しい記事と、閉じている学校HPから移した過去の記事（assets/gakkou/kako.js）を合わせて新しい順に。
+  // GAS が読めなくても、過去の記事だけは出す
+  var KAKO = window.A4B_GAKKOU_KAKO || [];
+  function getSchool() {
+    return getAll().then(function (list) { return list.filter(isSchool); }, function () { return []; }).then(function (list) {
+      return list.concat(KAKO).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : (a.id < b.id ? 1 : -1); });
+    });
   }
 
   // ─── 表示 ───
@@ -52,8 +64,12 @@
     return m ? m[1] + '年' + Number(m[2]) + '月' + Number(m[3]) + '日' : '';
   }
   // 本文の中の「【写真1】」だけの行は、その場所に写真を出す印（2026-11-03）。［写真1］・[写真1]・全角数字も通す
-  var PHOTO_MARK = /^\s*[【\[［]\s*写真\s*([1-4１-４])\s*[】\]］]\s*$/;
-  function markNo(line) { var m = PHOTO_MARK.exec(line); return m ? '1234１２３４'.indexOf(m[1]) % 4 + 1 : 0; }
+  // 学校HPから移した過去の記事は写真が4枚より多いので、2けたまで通す（2026-11-10）
+  var PHOTO_MARK = /^\s*[【\[［]\s*写真\s*([0-9０-９]{1,2})\s*[】\]］]\s*$/;
+  function markNo(line) {
+    var m = PHOTO_MARK.exec(line);
+    return m ? Number(m[1].replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })) : 0;
+  }
   function stripMarks(s) { return String(s || '').split(/\r?\n/).filter(function (l) { return !markNo(l); }).join('\n'); }
   function figureOf(p) {
     return '<figure><div class="ph-box"><img data-photo="' + esc(p.id) + '" alt="' + esc(p.caption || '') + '">' + WAIT + '</div>' + (p.caption ? '<figcaption>' + esc(p.caption) + '</figcaption>' : '') + '</figure>';
@@ -77,7 +93,7 @@
   }
   function excerpt(s, n) { s = stripMarks(s).replace(/\s+/g, ' '); return s.length > n ? s.slice(0, n) + '…' : s; }
   function slugOf(name) {
-    var a = (C.ACTIVITIES || []).filter(function (x) { return x.name === name; })[0];
+    var a = (C.ACTIVITIES || []).concat(SCHOOL).filter(function (x) { return x.name === name; })[0];
     return a ? a.slug : '';
   }
 
@@ -87,7 +103,14 @@
   var localPhotos = window.A4B_KIJI_PHOTOS || [];
   function loadPhoto(img) {
     var id = img.getAttribute('data-photo');
-    if (localPhotos.indexOf(id) >= 0 && !img.getAttribute('data-local-failed')) {
+    // 学校HPから移した過去の記事の写真（ID は hp記事番号-何枚目）は assets/gakkou/ に置いてある。GAS にはない
+    var kako = /^hp\d+-\d+$/.test(id);
+    if (kako && img.getAttribute('data-local-failed')) {
+      var w0 = img.parentNode.querySelector('.ph-wait');
+      if (w0) w0.textContent = '写真を表示できませんでした';
+      return;
+    }
+    if (kako || (localPhotos.indexOf(id) >= 0 && !img.getAttribute('data-local-failed'))) {
       // スマホの幅と記事一覧のカードでは幅640px の小さい版（-s.jpg）を使う。なければ今の版、それもなければ GAS（2026-11-03）
       var small = !img.getAttribute('data-small-failed') && (window.innerWidth <= 760 || img.closest('.card-photo'));
       img.onload = function () { img.classList.add('loaded'); var w = img.parentNode.querySelector('.ph-wait'); if (w) w.remove(); };
@@ -96,7 +119,7 @@
         img.setAttribute(small ? 'data-small-failed' : 'data-local-failed', '1');
         img.removeAttribute('src'); loadPhoto(img);
       };
-      img.src = 'assets/kiji/' + encodeURIComponent(id) + (small ? '-s' : '') + '.jpg';
+      img.src = (kako ? 'assets/gakkou/' + id.slice(2) : 'assets/kiji/' + encodeURIComponent(id)) + (small ? '-s' : '') + '.jpg';
       return;
     }
     if (!photoCache[id]) photoCache[id] = api({ photo: id }).then(function (d) {
@@ -142,13 +165,14 @@
   }
 
   // data-articles="latest:4" / "all" / "activity:朝ごはんPJ:3" のついた箱に記事を入れる
-  function fillBoxes() {
-    var boxes = document.querySelectorAll('[data-articles]');
+  // data-gakkou="latest:3" の箱には「学校のようす」を入れる（2026-11-10）
+  function fillBoxes(attr, getter) {
+    var boxes = document.querySelectorAll('[' + attr + ']');
     if (!boxes.length) return;
     boxes.forEach(function (el) { el.innerHTML = '<p class="empty">読み込み中…</p>'; });
-    getArticles().then(function (list) {
+    getter().then(function (list) {
       boxes.forEach(function (el) {
-        var spec = el.getAttribute('data-articles').split(':');
+        var spec = el.getAttribute(attr).split(':');
         var items = list;
         if (spec[0] === 'activity') items = list.filter(function (a) { return a.activity === spec[1]; });
         var n = Number(spec[spec.length - 1]);
@@ -176,24 +200,35 @@
   }
 
   // 記事一覧ページ: 活動名で絞り込む
+  // 学校のようす（gakkou.html。箱に data-kind="gakkou"）は項目で絞り込み、12本ずつ出す（毎日増えるため。2026-11-10）
   function setupFilter() {
     var bar = document.getElementById('filter');
     var box = document.getElementById('all-articles');
     if (!bar || !box) return;
+    var school = box.getAttribute('data-kind') === 'gakkou';
+    var step = school ? 12 : 0, shown = step;
+    var more = document.getElementById('more-articles');
+    var getter = school ? getSchool : getArticles;
     var current = new URLSearchParams(location.search).get('a') || '';
-    var btns = [{ name: '', label: 'すべて' }].concat((C.ACTIVITIES || []).map(function (x) { return { name: x.name, label: x.name }; }));
+    var btns = [{ name: '', label: 'すべて' }].concat((school ? SCHOOL : C.ACTIVITIES || []).map(function (x) { return { name: x.name, label: x.name }; }));
     bar.innerHTML = btns.map(function (b) {
       return '<button type="button" data-a="' + esc(b.name) + '"' + (b.name === current ? ' aria-pressed="true"' : ' aria-pressed="false"') + '>' + esc(b.label) + '</button>';
     }).join('');
     box.innerHTML = '<p class="empty">読み込み中…</p>';
-    getArticles().then(function (list) {
+    getter().then(function (list) {
       function render() {
         var items = current ? list.filter(function (a) { return a.activity === current; }) : list;
-        showList(box, items, current ? 'この活動の記事は、まだありません。' : '');
+        showList(box, step ? items.slice(0, shown) : items, current ? (school ? 'この項目の記事は、まだありません。' : 'この活動の記事は、まだありません。') : '');
+        if (more) {
+          more.hidden = !step || items.length <= shown;
+          more.textContent = 'もっと見る（残り' + (items.length - shown) + '本）';
+        }
       }
+      if (more) more.addEventListener('click', function () { shown += step; render(); });
       bar.addEventListener('click', function (ev) {
         var b = ev.target.closest('button'); if (!b) return;
         current = b.getAttribute('data-a');
+        shown = step;
         bar.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
         history.replaceState(null, '', current ? '?a=' + encodeURIComponent(current) : location.pathname);
         render();
@@ -208,15 +243,25 @@
     if (!box) return;
     var id = new URLSearchParams(location.search).get('id');
     box.innerHTML = '<p class="empty">読み込み中…</p>';
-    getArticles().then(function (list) {
+    // 学校HPから移した過去の記事（ID が hp…）は GAS を待たずに出す
+    var old = KAKO.filter(function (x) { return x.id === id; })[0];
+    (old ? Promise.resolve([old]) : getAll()).then(function (list) {
       var a = list.filter(function (x) { return x.id === id; })[0];
       if (!a) { box.innerHTML = '<p class="empty">この記事は見つかりませんでした。</p>'; return; }
+      var school = isSchool(a);
       document.title = a.title + '｜名護中学校コミュニティスクール';
       box.innerHTML =
-        '<p class="meta"><a class="tag tag-' + slugOf(a.activity) + '" href="katsudo.html?a=' + encodeURIComponent(a.activity) + '">' + esc(a.activity) + '</a><time>' + jpDate(a.date) + '</time></p>' +
+        '<p class="meta"><a class="tag tag-' + slugOf(a.activity) + '" href="' + (school ? 'gakkou' : 'katsudo') + '.html?a=' + encodeURIComponent(a.activity) + '">' + esc(a.activity) + '</a><time>' + jpDate(a.date) + '</time></p>' +
         '<h1>' + esc(a.title) + '</h1>' +
-        articleBody(a.body, a.photos || []);
+        articleBody(a.body, a.photos || []) +
+        (a.files && a.files.length ? '<p class="article-note">添付の文書（' + a.files.map(esc).join('、') + '）は、移していません。</p>' : '') +
+        (old ? '<p class="article-note">この記事は、名護中学校のホームページ（いまは閉じています）に載っていたものを移しました。</p>' : '');
       watchPhotos(box);
+      if (school) {
+        // メニューと「戻る」を、活動ではなく学校のようすに合わせる
+        document.querySelectorAll('.site-nav a').forEach(function (l) { l.toggleAttribute('aria-current', l.getAttribute('href') === 'gakkou.html'); });
+        document.querySelectorAll('[data-back]').forEach(function (l) { l.href = 'gakkou.html'; l.textContent = '← 学校のようすの一覧へ'; });
+      }
     }, function (err) { showError(box, err); });
   }
 
@@ -426,6 +471,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    setupNav(); setupContact(); fillBoxes(); fillCounts(); setupFilter(); setupArticle(); fillLinks('data-school', 'school'); fillLinks('data-insta', 'insta'); fillNews(); setupNewsOpen();
+    setupNav(); setupContact(); fillBoxes('data-articles', getArticles); fillBoxes('data-gakkou', getSchool); fillCounts(); setupFilter(); setupArticle(); fillLinks('data-school', 'school'); fillLinks('data-insta', 'insta'); fillNews(); setupNewsOpen();
   });
 })();
