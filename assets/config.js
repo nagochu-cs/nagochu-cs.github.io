@@ -10,7 +10,7 @@ window.A4B_CONFIG = {
     { name: '名護中まちなかクラブ', slug: 'machinaka' },
     { name: '朝ごはんPJ', slug: 'asagohan' },
     { name: 'てんたばる学校地域講座', slug: 'tentabaru' },
-    { name: '放課後学習支援', slug: 'gakushu' },
+    { name: '学習支援', slug: 'gakushu' },             // 2026-11-11 「放課後学習支援」から変えた
     { name: '講演会・特別授業', slug: 'kouen' },
     { name: 'その他', slug: 'sonota' },               // 2026-10-26 足した。どれにも当たらない記事
   ],
