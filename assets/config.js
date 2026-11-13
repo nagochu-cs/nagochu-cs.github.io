@@ -56,6 +56,14 @@ window.A4B_CONFIG = {
       { src: 'assets/news/asagohan-20261104.jpg', alt: '11月4日の献立の見本（クラムチャウダー・キャベツとコーンのコールスロー・ご飯）' },
       { src: 'assets/news/asagohan-20261104-kondate.jpg', alt: '11月4日のカロリー内訳の表' },
     ],
+    n2026110217472777: [   // 2026-11-13 朝ごはんPJ（11/18）の献立
+      { src: 'assets/news/asagohan-20261118.jpg', alt: '11月18日の献立の見本（きのこと豚肉のバタポン炒め・チーズ入り厚焼き卵・豆腐とわかめとねぎの味噌汁・ご飯）' },
+      { src: 'assets/news/asagohan-20261118-kondate.jpg', alt: '11月18日のカロリー内訳の表（1人前 約512kcal）' },
+    ],
+    n2026110217473333: [   // 2026-11-13 朝ごはんPJ（11/25）の献立
+      { src: 'assets/news/asagohan-20261125.jpg', alt: '11月25日の献立の見本（具だくさんミネストローネ・焼きウインナー・ブロッコリーとコーンのバター醤油和え・ヨーグルト・ご飯）' },
+      { src: 'assets/news/asagohan-20261125-kondate.jpg', alt: '11月25日のカロリー内訳の表（1人前 約584kcal）' },
+    ],
     n2026110515512122: [
       { src: 'assets/news/nagochusai-20261118.jpg', alt: '名護中祭（11月18日・放課後・名護中体育館）のポスター' },
     ],
