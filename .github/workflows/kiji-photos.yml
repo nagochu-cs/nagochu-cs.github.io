@@ -9,6 +9,7 @@
 # 2026-11-13: 11/11 に Actions を有効にしたあとも毎時の自動実行が一度も動かなかった（手動の1回だけ）。
 #   11/8 の登録のとき Actions が無効で、毎時の予定が登録されなかったと推測。この2行を足して push し直した。
 #   2026-11-18: 公開から速くなるまで最大1時間かかり遅く感じる（社長）。案A で15分ごとにした。
+#   2026-11-18: 記事ごとのページ（k/<記事ID>.html）も作るようにした。LINE で記事の URL を送ると、記事ごとの写真と題名が出る。
 name: 記事の写真を置く
 
 on:
@@ -33,11 +34,11 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install --quiet pillow
-      - name: 新しい写真を置く
-        run: python .github/scripts/kiji-photos.py --site=.
+      - name: 新しい写真を置き、記事ごとのページ（k/）を作る
+        run: python .github/scripts/kiji-photos.py --site=. --pages
       - name: 変わっていれば commit して push
         run: |
-          git add assets/kiji
+          git add assets/kiji k
           if git diff --cached --quiet; then echo "新しい写真はありません"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898499+github-actions[bot]@users.noreply.github.com"

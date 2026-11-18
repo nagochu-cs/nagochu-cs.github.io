@@ -142,10 +142,16 @@
   }
 
   var WAIT = '<span class="ph-wait" aria-hidden="true">写真を読み込み中…</span>';
+  // 記事ごとのページ（k/ID.html）。GitHub Actions が記事の写真と一緒に作る（tools/kiji-photos.py --pages）。
+  // LINE などで URL を送ったとき、記事ごとの写真と題名が出る。まだできていない記事は kiji.html?id= で開く（2026-11-18）
+  var kijiPages = window.A4B_KIJI_PAGES || [];
+  function articleUrl(id) {
+    return kijiPages.indexOf(id) >= 0 ? 'k/' + encodeURIComponent(id) + '.html' : 'kiji.html?id=' + encodeURIComponent(id);
+  }
   function card(a) {
     var ph = a.photos && a.photos[0];
     return '<article class="card">' +
-      '<a href="kiji.html?id=' + encodeURIComponent(a.id) + '">' +
+      '<a href="' + articleUrl(a.id) + '">' +
       '<div class="card-photo">' + (ph ? '<img data-photo="' + esc(ph.id) + '" alt="' + esc(ph.caption || a.title) + '">' + WAIT : '<span class="no-photo">' + esc(a.activity) + '</span>') + '</div>' +
       '<div class="card-body">' +
       '<p class="meta"><span class="tag tag-' + slugOf(a.activity) + '">' + esc(a.activity) + '</span><time>' + jpDate(a.date) + '</time></p>' +
@@ -241,7 +247,8 @@
   function setupArticle() {
     var box = document.getElementById('article');
     if (!box) return;
-    var id = new URLSearchParams(location.search).get('id');
+    // 記事ごとのページ（k/ID.html）では、ページに書いてある ID を使う（2026-11-18）
+    var id = window.A4B_ARTICLE_ID || new URLSearchParams(location.search).get('id');
     box.innerHTML = '<p class="empty">読み込み中…</p>';
     // 学校HPから移した過去の記事（ID が hp…）は GAS を待たずに出す
     var old = KAKO.filter(function (x) { return x.id === id; })[0];
@@ -320,7 +327,8 @@
   }
 
   function setupNav() {
-    var here = location.pathname.split('/').pop() || 'index.html';
+    // 記事ごとのページ（k/ID.html）は、記事（kiji.html）と同じ扱い（2026-11-18）
+    var here = window.A4B_ARTICLE_ID ? 'kiji.html' : (location.pathname.split('/').pop() || 'index.html');
     document.querySelectorAll('.site-nav a').forEach(function (a) {
       // 記事の一覧（katsudo）と記事（kiji）は、メニューでは「活動」の中
       if (a.getAttribute('href') === here || ((here === 'kiji.html' || here === 'katsudo.html') && a.getAttribute('href') === 'shokai.html')) a.setAttribute('aria-current', 'page');

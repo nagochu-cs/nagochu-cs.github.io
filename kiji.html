@@ -20,8 +20,16 @@
 <link rel="stylesheet" href="assets/style.css?v=23">
 <script src="assets/config.js?v=13"></script>
 <script src="assets/kiji/photos.js"></script>
+<script src="k/list.js"></script>
+<script>
+// 記事ごとのページ（k/ID.html）があれば、そちらへ移る。LINE などに記事ごとの写真と題名が出るように（2026-11-18）
+(function () {
+  var id = new URLSearchParams(location.search).get('id');
+  if (!window.A4B_ARTICLE_ID && id && /kiji\.html$/.test(location.pathname) && (window.A4B_KIJI_PAGES || []).indexOf(id) >= 0) location.replace('k/' + encodeURIComponent(id) + '.html' + location.hash);
+})();
+</script>
 <script src="assets/gakkou/kako.js?v=1"></script>
-<script src="assets/site.js?v=16" defer></script>
+<script src="assets/site.js?v=17" defer></script>
 <!-- アクセス解析（GoatCounter・Google アナリティクス4）。本物のサイトでだけ動く（2026-10-19） -->
 <script>
 if (location.hostname === 'nagochu-cs.github.io') {
