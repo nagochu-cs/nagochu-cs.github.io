@@ -58,7 +58,23 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
-  function para(s) { return esc(s).replace(/\r?\n/g, '<br>'); }
+  // 本文の URL（http:// か https:// で始まるもの）は、押すと別のタブで開くリンクにする（2026-11-25）
+  // 終わりの句読点・かっこは URL に含めない。全角の文字が来たらそこで切る
+  var URL_RE = /https?:\/\/[A-Za-z0-9\-._~:\/?#\[\]@!$&'*+,;=%]+/g;
+  function linkify(s) {
+    s = String(s == null ? '' : s);
+    var out = '', last = 0, m;
+    URL_RE.lastIndex = 0;
+    while ((m = URL_RE.exec(s))) {
+      var url = m[0].replace(/[.,;:!?'\]]+$/, '');
+      out += esc(s.slice(last, m.index)) +
+        '<a href="' + esc(url) + '" target="_blank" rel="noopener" style="overflow-wrap:anywhere">' + esc(url) + '</a>';
+      last = m.index + url.length;
+      URL_RE.lastIndex = last;
+    }
+    return out + esc(s.slice(last));
+  }
+  function para(s) { return linkify(s).replace(/\r?\n/g, '<br>'); }
   function jpDate(d) {
     var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || '');
     return m ? m[1] + '年' + Number(m[2]) + '月' + Number(m[3]) + '日' : '';
