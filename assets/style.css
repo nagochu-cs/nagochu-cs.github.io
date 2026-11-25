@@ -240,6 +240,12 @@ h2::before { content: ""; width: 28px; height: 2px; background: var(--shu); flex
 .post-preview { display: flex; flex-direction: column; gap: 6px; width: 120px; }
 .post-preview img { width: 120px; height: 96px; }
 .post-preview .button { font-size: 13px; padding: 6px 8px; margin: 0; width: auto; max-width: none; }
+.photo-drop { margin-top: 8px; padding: 12px 14px; border: 2px dashed var(--line); border-radius: 8px; font-size: 13px; color: var(--muted); background: var(--bg); cursor: text; }
+.photo-drop:focus, .photo-drop.over { outline: none; border-color: currentColor; color: inherit; }
+.photo-drop:focus::before { content: "貼り付けの準備ができました（Ctrl+V）。"; display: block; font-weight: 700; margin-bottom: 4px; }
+.photo-drop[hidden] { display: none; }
+/* スマホ（指でさわる画面）では、今までどおり「ファイルを選ぶ」だけを出す */
+@media (hover: none) and (pointer: coarse) { .photo-drop { display: none; } }
 .post-message { min-height: 1.5em; margin: 20px 0 0; font-weight: 700; color: var(--accent); }
 .post-message.error { color: #a1372b; }
 .post-trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }

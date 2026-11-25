@@ -209,6 +209,7 @@
       '<p class="label-like">写真（4枚まで）</p>' +
       '<ul class="admin-photos">' + ph + '</ul>' +
       (edit.photos.length < MAX_PHOTOS ? '<label class="button button-ghost add-photo">写真を足す<input type="file" accept="image/*" multiple data-ph-add="1" hidden></label>' : '') +
+      (edit.photos.length < MAX_PHOTOS ? '<div class="photo-drop" tabindex="0" role="group" aria-label="写真の貼り付け先" data-ph-drop="1">ここに写真を貼り付けもできます（Ctrl+V）。コピーした写真をここをクリックしてから貼るか、ここへドラッグします。</div>' : '') +
       '<p class="hint">' + (SCHOOL ? '学校として載せてよい写真を選んでください。' : 'なるべく顔が映っていないもの（後ろ姿・手元・遠くから）。') + '位置情報は自動で消します。</p>' +
       '<div class="acts"><button type="submit" class="button">保存する</button><button type="button" class="button button-ghost" data-edit="' + esc(x.id) + '">やめる</button></div>' +
       '</form>';
@@ -287,6 +288,33 @@
       redrawEditor();
     });
   });
+
+  // 貼り付け（Ctrl+V）・ドラッグでも写真を足す（「写真を足す」と同じ流れ。2026-11-25）。画像のファイルの取り出しは toukou.js の CS_imageFiles
+  function addEditPhotos(files) {
+    if (!edit || !files.length) return;
+    var room = MAX_PHOTOS - edit.photos.length;
+    if (room <= 0) { say('写真は4枚までです。足すときは、どれかを「外す」で外してください。', true); return; }
+    readPhotos(files).then(function (list) {
+      if (!list.length) { say(ERRORS.bad_photo, true); return; }
+      if (list.length > room) say('写真は4枚までです。はじめの' + room + '枚だけを足します。', true);
+      list.slice(0, room).forEach(function (d) { edit.photos.push({ data: d }); });
+      edit.changed = true;
+      redrawEditor();
+    });
+  }
+  var pick = function (dt) { return window.CS_imageFiles ? window.CS_imageFiles(dt) : []; };
+  listEl.addEventListener('paste', function (ev) {
+    var t = ev.target;
+    if (!edit || !t.closest('form[data-form]')) return;
+    var files = pick(ev.clipboardData);
+    if (!files.length) return;
+    if (/^(TEXTAREA|INPUT)$/.test(t.tagName) && ev.clipboardData.getData('text/plain')) return; // 文字を貼るときはふつうに
+    ev.preventDefault();
+    addEditPhotos(files);
+  });
+  listEl.addEventListener('dragover', function (ev) { var d = ev.target.closest && ev.target.closest('[data-ph-drop]'); if (d) { ev.preventDefault(); d.classList.add('over'); } });
+  listEl.addEventListener('dragleave', function (ev) { var d = ev.target.closest && ev.target.closest('[data-ph-drop]'); if (d) d.classList.remove('over'); });
+  listEl.addEventListener('drop', function (ev) { var d = ev.target.closest && ev.target.closest('[data-ph-drop]'); if (!d) return; ev.preventDefault(); addEditPhotos(pick(ev.dataTransfer)); });
 
   listEl.addEventListener('submit', function (ev) {
     var f = ev.target.closest('form[data-form]');

@@ -8,7 +8,7 @@
   var msg = document.getElementById('f-message');
   var btn = document.getElementById('f-submit');
   var previews = document.getElementById('f-previews');
-  var photos = []; // 描き直した JPEG（data URL）
+  var photos = []; // 描き直した JPEG（data URL）。ファイルを選ぶ・貼り付け・ドラッグで足し、「外す」で外す
 
   var ERRORS = {
     bad_passcode: '合言葉がちがいます。',
@@ -106,42 +106,103 @@
     g.drawImage(img, 0, 0, c.width, c.height);
     return c.toDataURL('image/jpeg', 0.85);
   }
-  form.photos.addEventListener('change', function () {
-    var files = Array.prototype.slice.call(form.photos.files || []);
-    photos = [];
+  // 写真の欄を描き直す（見本・「本文に入れる」・「外す」）
+  function drawPhotos() {
     previews.innerHTML = '';
-    if (files.length > MAX_PHOTOS) say('写真は4枚までです。はじめの4枚だけを使います。', true);
+    photos.forEach(function (data, i) {
+      var n = i + 1;
+      var box = document.createElement('div');
+      box.className = 'post-preview';
+      var im = document.createElement('img');
+      im.src = data;
+      im.alt = n + '枚目';
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'button button-ghost';
+      b.textContent = n + '枚目を本文に入れる';
+      b.addEventListener('click', function () { insertMark(form.body, n); showCount(); });
+      var rm = document.createElement('button');
+      rm.type = 'button';
+      rm.className = 'button button-ghost';
+      rm.textContent = '外す';
+      rm.addEventListener('click', function () { photos.splice(i, 1); form.body.value = dropMark(form.body.value, n); showCount(); drawPhotos(); say(''); });
+      box.appendChild(im);
+      box.appendChild(b);
+      box.appendChild(rm);
+      previews.appendChild(box);
+    });
+    if (drop) drop.hidden = photos.length >= MAX_PHOTOS;
+  }
+  // n 枚目を外したとき、本文の【写真n】の行を消し、うしろの番号を1つずつ詰める（印と写真がずれないように）
+  function dropMark(text, n) {
+    return text.replace(/\n?【写真(\d+)】\n?/g, function (all, k) {
+      k = Number(k);
+      if (k === n) return all.charAt(0) === '\n' && all.slice(-1) === '\n' ? '\n' : '';
+      return all.replace(/\d+/, String(k > n ? k - 1 : k));
+    });
+  }
+  window.CS_dropPhotoMark = dropMark;
+  // 写真を足す（ファイルを選ぶ・貼り付け・ドラッグのどれも、ここを通る。4枚まで・長い辺 1600px の JPEG に描き直す）
+  function addPhotos(files) {
+    files = files.filter(function (f) { return /^image\//.test(f.type) || !f.type; });
+    if (!files.length) return Promise.resolve();
+    var room = MAX_PHOTOS - photos.length;
+    if (room <= 0) { say('写真は4枚までです。足すときは、どれかを「外す」で外してください。', true); return Promise.resolve(); }
+    if (files.length > room) say('写真は4枚までです。はじめの' + room + '枚だけを足します。', true);
     else say('');
-    files = files.slice(0, MAX_PHOTOS);
-    if (!files.length) return;
+    files = files.slice(0, room);
     btn.disabled = true;
     var failed = 0;
-    files.reduce(function (p, file) {
+    return files.reduce(function (p, file) {
       return p.then(function () {
-        return loadImage(file).then(function (img) {
-          var data = toJpeg(img);
-          photos.push(data);
-          var n = photos.length;
-          var box = document.createElement('div');
-          box.className = 'post-preview';
-          var im = document.createElement('img');
-          im.src = data;
-          im.alt = n + '枚目';
-          var b = document.createElement('button');
-          b.type = 'button';
-          b.className = 'button button-ghost';
-          b.textContent = n + '枚目を本文に入れる';
-          b.addEventListener('click', function () { insertMark(form.body, n); showCount(); });
-          box.appendChild(im);
-          box.appendChild(b);
-          previews.appendChild(box);
-        }, function () { failed++; });
+        return loadImage(file).then(function (img) { photos.push(toJpeg(img)); }, function () { failed++; });
       });
     }, Promise.resolve()).then(function () {
       btn.disabled = false;
+      drawPhotos();
       if (failed) say(failed + '枚の写真を読み込めませんでした。別の写真を選んでください（ほかの写真は送れます）。', true);
     });
+  }
+  window.CS_addPostPhotos = addPhotos;
+  form.photos.addEventListener('change', function () {
+    var files = Array.prototype.slice.call(form.photos.files || []);
+    form.photos.value = ''; // 同じ写真をもう一度選んでも足せるように
+    addPhotos(files);
   });
+
+  // クリップボード・ドラッグから画像のファイルを取り出す（Googleフォトの「画像をコピー」は PNG で入ることが多い。JPEG に描き直すので位置情報は残らない、2026-11-25）
+  function imageFiles(dt) {
+    if (!dt) return [];
+    var out = [];
+    Array.prototype.forEach.call(dt.items || [], function (it) {
+      if (it.kind === 'file' && /^image\//.test(it.type)) { var f = it.getAsFile(); if (f) out.push(f); }
+    });
+    if (!out.length) Array.prototype.forEach.call(dt.files || [], function (f) { if (/^image\//.test(f.type)) out.push(f); });
+    return out;
+  }
+  window.CS_imageFiles = imageFiles;
+  function hasText(dt) { return !!(dt && dt.getData && dt.getData('text/plain')); }
+
+  // 貼り付け（Ctrl+V）: 投稿のフォームの中か、どこにもカーソルがないときに受ける。管理の「文字・写真を直す」の中は kanri.js が受ける
+  var drop = document.getElementById('f-drop');
+  document.addEventListener('paste', function (ev) {
+    if (form.hidden) return;
+    var t = ev.target;
+    var inForm = t && t.closest && t.closest('#post-form');
+    if (!inForm && t !== document.body && t !== document.documentElement) return;
+    var files = imageFiles(ev.clipboardData);
+    if (!files.length) return;
+    // 本文などの文字の欄に文字を貼るときは、ふつうに文字を貼る（画像だけのときに写真として受ける）
+    if (/^(TEXTAREA|INPUT)$/.test(t.tagName) && t.type !== 'file' && hasText(ev.clipboardData)) return;
+    ev.preventDefault();
+    addPhotos(files);
+  });
+  if (drop) {
+    drop.addEventListener('dragover', function (ev) { ev.preventDefault(); drop.classList.add('over'); });
+    drop.addEventListener('dragleave', function () { drop.classList.remove('over'); });
+    drop.addEventListener('drop', function (ev) { ev.preventDefault(); drop.classList.remove('over'); addPhotos(imageFiles(ev.dataTransfer)); });
+    drop.addEventListener('click', function () { drop.focus(); });
+  }
 
   // ─── 送信 ───
   function check() {
